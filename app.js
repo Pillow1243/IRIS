@@ -29,6 +29,18 @@
     { id: "feat-kika", name: "KiKA", cc: "DE", groups: ["kids"], url: "https://kikageohls.akamaized.net/hls/live/2022693/livetvkika_de/master.m3u8" },
     { id: "feat-redbull", name: "Red Bull TV", cc: "AT", groups: ["sports"], url: "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8" },
     { id: "feat-newsmax", name: "Newsmax", cc: "US", groups: ["news"], url: "https://nmxlive.akamaized.net/hls/live/529965/Live_1/index.m3u8" },
+    { id: "feat-euronews", name: "Euronews", cc: "FR", groups: ["news"], url: "https://cdn-euronews.akamaized.net/live/eds/euronews-pl/26382/index.m3u8" },
+    { id: "feat-f24-es", name: "France 24 Español", cc: "FR", groups: ["news"], url: "https://static.france24.com/live/F24_ES_LO_HLS/live_web.m3u8" },
+    { id: "feat-ajm", name: "الجزيرة مباشر", cc: "QA", groups: ["news"], url: "https://live-hls-apps-ajm-fa.getaj.net/AJM/index.m3u8" },
+    { id: "feat-skyau", name: "Sky News Extra", cc: "AU", groups: ["news"], url: "https://skynewsau-live.akamaized.net/hls/live/2002689/skynewsau-extra1/master.m3u8" },
+    { id: "feat-hr", name: "hr-fernsehen", cc: "DE", groups: ["general"], url: "https://hrhls.akamaized.net/hls/live/2024525/hrhls/master.m3u8" },
+    { id: "feat-ndr", name: "NDR", cc: "DE", groups: ["general"], url: "https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_nds/master.m3u8" },
+    { id: "feat-sr", name: "SR Fernsehen", cc: "DE", groups: ["general"], url: "https://srfs.akamaized.net/hls/live/689649/srfsgeo/index.m3u8" },
+    { id: "feat-br", name: "BR Fernsehen", cc: "DE", groups: ["general"], url: "https://mcdn.br.de/br/fs/bfs_sued/hls/de/master.m3u8" },
+    { id: "feat-cbsn-ny", name: "CBS News New York", cc: "US", groups: ["news"], url: "https://cbsn-ny.cbsnstream.cbsnews.com/out/v1/ec3897d58a9b45129a77d67aa247d136/master.m3u8" },
+    { id: "feat-1tvge", name: "1TV Georgia", cc: "GE", groups: ["general"], url: "https://tv.cdn.xsg.ge/gpb-1tv/index.m3u8" },
+    { id: "feat-247", name: "247 Box TV", cc: "IR", groups: ["general"], url: "https://hls.247box.live/hls/stream.m3u8" },
+    { id: "feat-4u", name: "4U TV", cc: "TR", groups: ["general"], url: "https://hls.4utv.live/hls/stream.m3u8" },
   ].map((c) => ({ logo: "", ...c, featured: true }));
   const COUNTRIES = [
     { cc: "", fa: "جهان", en: "World" },
@@ -436,7 +448,7 @@
     if (state.connectTimer) clearTimeout(state.connectTimer);
     state.connectTimer = setTimeout(() => {
       if (gen !== state.playGen || state.playing) return;
-      failSkip();
+      stayFailed();
     }, 10000);
   }
   function setStatus(msg) {
@@ -482,7 +494,7 @@
           renderDock();
           return;
         }
-        failSkip();
+        stayFailed();
       });
     };
     armConnect(gen);
@@ -953,7 +965,7 @@
     });
     $("vid").addEventListener("error", () => {
       if (state.tearing || !state.current) return;
-      failSkip();
+      stayFailed();
     });
     addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
