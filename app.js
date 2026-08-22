@@ -1,8 +1,35 @@
 /* IRIS — ساخته شده توسط مبین.آ */
 (() => {
   const $ = (id) => document.getElementById(id);
-  const SRC = "https://iptv-org.github.io/iptv/index.m3u";
   const PAGE = 80;
+  const PLAYLISTS = [
+    "https://iptv-org.github.io/iptv/index.m3u",
+    "https://iptv-org.github.io/iptv/categories/news.m3u",
+    "https://iptv-org.github.io/iptv/countries/de.m3u",
+    "https://iptv-org.github.io/iptv/countries/ir.m3u",
+  ];
+  const FEATURED = [
+    { id: "feat-dw-en", name: "DW English", cc: "DE", groups: ["news"], url: "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8" },
+    { id: "feat-dw-de", name: "DW Deutsch", cc: "DE", groups: ["news"], url: "https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8" },
+    { id: "feat-dw-ar", name: "DW العربية", cc: "DE", groups: ["news"], url: "https://dwamdstream103.akamaized.net/hls/live/2015526/dwstream103/master.m3u8" },
+    { id: "feat-f24-en", name: "France 24 English", cc: "FR", groups: ["news"], url: "https://static.france24.com/live/F24_EN_LO_HLS/live_web.m3u8" },
+    { id: "feat-f24-fr", name: "France 24 Français", cc: "FR", groups: ["news"], url: "https://static.france24.com/live/F24_FR_LO_HLS/live_web.m3u8" },
+    { id: "feat-f24-ar", name: "France 24 العربية", cc: "FR", groups: ["news"], url: "https://static.france24.com/live/F24_AR_LO_HLS/live_web.m3u8" },
+    { id: "feat-aje", name: "Al Jazeera English", cc: "QA", groups: ["news"], url: "https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8" },
+    { id: "feat-aja", name: "الجزيرة", cc: "QA", groups: ["news"], url: "https://live-hls-apps-aja-fa.getaj.net/AJA/01.m3u8" },
+    { id: "feat-bloomberg", name: "Bloomberg", cc: "US", groups: ["news", "business"], url: "https://bloomberg.com/media-manifest/streams/us.m3u8" },
+    { id: "feat-cbsn", name: "CBS News", cc: "US", groups: ["news"], url: "https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8" },
+    { id: "feat-abc", name: "ABC News", cc: "US", groups: ["news"], url: "https://abc-news-dmd-streams-1.akamaized.net/out/v1/701126012d044971b3fa89406a440133/index.m3u8" },
+    { id: "feat-cgtn", name: "CGTN", cc: "CN", groups: ["news"], url: "https://news.cgtn.com/resource/live/english/cgtn-news.m3u8" },
+    { id: "feat-nhk", name: "NHK World", cc: "JP", groups: ["news"], url: "https://masterpl.hls.nhkworld.jp/hls/w/live/smarttv.m3u8" },
+    { id: "feat-trt", name: "TRT World", cc: "TR", groups: ["news"], url: "https://tv-trtworld.medya.trt.com.tr/master.m3u8" },
+    { id: "feat-ard", name: "Das Erste", cc: "DE", groups: ["general"], url: "https://daserste-live.ard-mcdn.de/daserste/live/hls/de/master.m3u8" },
+    { id: "feat-tagesschau", name: "tagesschau24", cc: "DE", groups: ["news"], url: "https://tagesschau.akamaized.net/hls/live/2020115/tagesschau/tagesschau_1/master.m3u8" },
+    { id: "feat-wdr", name: "WDR", cc: "DE", groups: ["general"], url: "https://wdrfs247.akamaized.net/hls/live/681509/wdr_msl4_fs247/index.m3u8" },
+    { id: "feat-kika", name: "KiKA", cc: "DE", groups: ["kids"], url: "https://kikageohls.akamaized.net/hls/live/2022693/livetvkika_de/master.m3u8" },
+    { id: "feat-redbull", name: "Red Bull TV", cc: "AT", groups: ["sports"], url: "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8" },
+    { id: "feat-newsmax", name: "Newsmax", cc: "US", groups: ["news"], url: "https://nmxlive.akamaized.net/hls/live/529965/Live_1/index.m3u8" },
+  ].map((c) => ({ logo: "", ...c, featured: true }));
   const COUNTRIES = [
     { cc: "", fa: "جهان", en: "World" },
     { cc: "IR", fa: "ایران", en: "Iran" },
@@ -53,7 +80,7 @@
     theme: localStorage.getItem("iris-theme") || "dark",
     vol: clampVol(localStorage.getItem("iris-vol")),
     muted: localStorage.getItem("iris-mute") === "1",
-    all: [],
+    all: FEATURED.slice(),
     view: [],
     shown: 0,
     q: "",
@@ -72,6 +99,8 @@
     chromeTimer: 0,
     chromeOn: true,
     deferredInstall: null,
+    tearing: false,
+    applyingAudio: false,
   };
 
   function clampVol(v) {
@@ -110,6 +139,10 @@
     const p = String(name || "IR").trim().split(/\s+/);
     return ((p[0] ? p[0][0] : "I") + (p[1] ? p[1][0] : "")).toUpperCase();
   }
+  function normCC(cc) {
+    const v = String(cc || "").toUpperCase();
+    return v === "UK" ? "GB" : v;
+  }
 
   function applyI18n() {
     const d = dict();
@@ -132,6 +165,7 @@
     renderCountries();
     renderCats();
     renderThemes();
+    renderNow();
     renderWall();
     renderDock();
   }
@@ -143,6 +177,8 @@
     renderThemes();
   }
   function applyAudio() {
+    if (state.applyingAudio) return;
+    state.applyingAudio = true;
     const video = $("vid");
     video.volume = state.vol;
     video.muted = state.muted || state.vol === 0;
@@ -156,6 +192,7 @@
       localStorage.setItem("iris-vol", String(state.vol));
       localStorage.setItem("iris-mute", video.muted ? "1" : "0");
     } catch (_) {}
+    state.applyingAudio = false;
   }
 
   function parseM3U(text) {
@@ -172,7 +209,8 @@
           .split(";")
           .map((s) => s.trim().toLowerCase())
           .filter(Boolean);
-        const cc = ((id.match(/\.([a-z]{2})(?:@|$)/i) || [])[1] || "").toUpperCase();
+        let cc = ((id.match(/\.([a-z]{2})(?:@|$)/i) || [])[1] || "").toUpperCase();
+        if (cc === "UK") cc = "GB";
         meta = { name, id, logo, groups, cc };
       } else if (meta && line && !line.startsWith("#")) {
         if (
@@ -194,7 +232,7 @@
     }
     const seen = new Set();
     return out.filter((c) => {
-      const k = c.id || c.url;
+      const k = c.url || c.id;
       if (seen.has(k)) return false;
       seen.add(k);
       return true;
@@ -206,7 +244,7 @@
     if (state.mode === "recent") return state.recents.slice();
     const q = state.q.trim().toLowerCase();
     return state.all.filter((c) => {
-      if (state.cc && c.cc !== state.cc) return false;
+      if (state.cc && normCC(c.cc) !== normCC(state.cc)) return false;
       if (state.cat && c.groups.indexOf(state.cat) < 0) return false;
       if (q && (c.name + " " + c.cc + " " + c.groups.join(" ")).toLowerCase().indexOf(q) < 0) return false;
       return true;
@@ -215,6 +253,7 @@
   function applyFilter() {
     state.view = filtered();
     state.shown = 0;
+    renderNow();
     renderWall();
     const w = $("wall");
     if (w) w.scrollTop = 0;
@@ -254,6 +293,14 @@
     if (!box) return;
     box.innerHTML = THEMES.map((id) => {
       return `<button type="button" class="${state.theme === id ? "on" : ""}" data-theme="${id}">${t(id)}</button>`;
+    }).join("");
+  }
+  function renderNow() {
+    const box = $("now");
+    if (!box) return;
+    box.innerHTML = FEATURED.map((c) => {
+      const on = state.current && state.current.id === c.id ? "on" : "";
+      return `<button type="button" class="chip ${on}" data-play="${esc(c.id)}">${flag(c.cc)} ${esc(c.name)}</button>`;
     }).join("");
   }
   function card(c) {
@@ -307,6 +354,7 @@
 
   function findCh(id) {
     return (
+      FEATURED.find((c) => c.id === id) ||
       state.view.find((c) => c.id === id) ||
       state.all.find((c) => c.id === id) ||
       state.favs.find((c) => c.id === id) ||
@@ -328,7 +376,10 @@
   }
 
   function stopHls() {
+    state.tearing = true;
     if (state.hls) {
+      try { state.hls.stopLoad(); } catch (_) {}
+      try { state.hls.detachMedia(); } catch (_) {}
       try { state.hls.destroy(); } catch (_) {}
       state.hls = null;
     }
@@ -336,46 +387,62 @@
       clearTimeout(state.connectTimer);
       state.connectTimer = 0;
     }
+    const video = $("vid");
+    try {
+      video.pause();
+      video.removeAttribute("src");
+      video.srcObject = null;
+    } catch (_) {}
+    setTimeout(() => { state.tearing = false; }, 80);
   }
   function armConnect(gen) {
     if (state.connectTimer) clearTimeout(state.connectTimer);
     state.connectTimer = setTimeout(() => {
       if (gen !== state.playGen || state.playing) return;
       failSkip();
-    }, 14000);
+    }, 10000);
   }
-  function play(ch) {
+  function setStatus(msg) {
+    state.status = msg || "";
+    const el = $("s-status");
+    if (el) el.textContent = state.status;
+    const kick = $("d-kick");
+    if (kick) kick.textContent = state.status || t("live");
+  }
+  function play(ch, fromUser) {
     if (!ch) return;
     const video = $("vid");
+    if (fromUser) state.fails = 0;
     state.playGen += 1;
     const gen = state.playGen;
     state.current = ch;
     state.playing = false;
-    state.status = t("connecting");
+    setStatus(state.fails ? t("hunting") : t("connecting"));
     state.recents = [ch, ...state.recents.filter((x) => x.id !== ch.id)].slice(0, 40);
     try { localStorage.setItem("iris-recents", JSON.stringify(state.recents)); } catch (_) {}
     stopHls();
-    video.pause();
-    try { video.removeAttribute("src"); video.load(); } catch (_) {}
     applyAudio();
     renderDock();
+    renderNow();
     markCurrent();
     showChrome();
+    openStage();
     const url = ch.url;
     const onReady = () => {
       if (gen !== state.playGen) return;
       video.play().then(() => {
         if (gen !== state.playGen) return;
         state.playing = true;
-        state.status = "";
         state.fails = 0;
+        setStatus("");
         if (state.connectTimer) { clearTimeout(state.connectTimer); state.connectTimer = 0; }
         renderDock();
         hideChromeSoon();
       }).catch((err) => {
+        if (gen !== state.playGen) return;
         if (err && err.name === "NotAllowedError") {
           state.playing = false;
-          state.status = t("tap");
+          setStatus(t("tap"));
           renderDock();
           return;
         }
@@ -387,9 +454,13 @@
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
-        maxBufferLength: 30,
-        fragLoadingTimeOut: 15000,
-        manifestLoadingTimeOut: 12000,
+        backBufferLength: 30,
+        maxBufferLength: 20,
+        fragLoadingTimeOut: 8000,
+        manifestLoadingTimeOut: 8000,
+        fragLoadingMaxRetry: 1,
+        manifestLoadingMaxRetry: 1,
+        levelLoadingMaxRetry: 1,
         xhrSetup: (xhr) => { xhr.withCredentials = false; },
       });
       state.hls = hls;
@@ -397,15 +468,8 @@
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, onReady);
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (gen !== state.playGen || !data) return;
-        if (!data.fatal) return;
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-          try { hls.startLoad(); } catch (_) { failSkip(); }
-        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          try { hls.recoverMediaError(); } catch (_) { failSkip(); }
-        } else {
-          failSkip();
-        }
+        if (gen !== state.playGen || !data || !data.fatal) return;
+        failSkip();
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = url;
@@ -413,18 +477,18 @@
     } else {
       failSkip();
     }
-    openStage();
   }
   function failSkip() {
+    if (state.tearing) return;
     state.fails += 1;
     state.playing = false;
-    state.status = t("failed");
+    setStatus(state.fails < 12 ? t("hunting") : t("failed"));
     renderDock();
-    toast(t("failed"));
-    if (state.fails < 3) setTimeout(() => playRel(1), 500);
+    if (state.fails < 12) setTimeout(() => playRel(1), 280);
+    else toast(t("failed"));
   }
   function playRel(dir) {
-    const list = state.view.length ? state.view : state.all;
+    const list = huntList();
     if (!list.length) return;
     if (!state.current) {
       play(list[0]);
@@ -434,10 +498,25 @@
     const n = ((i < 0 ? 0 : i) + dir + list.length) % list.length;
     play(list[n]);
   }
+  function huntList() {
+    if (state.view.length) {
+      const feat = FEATURED.filter((c) => state.view.some((v) => v.id === c.id) || !state.cc && !state.cat && !state.q);
+      const rest = state.view.filter((c) => !c.featured);
+      const merged = [];
+      const seen = new Set();
+      feat.concat(rest).forEach((c) => {
+        if (seen.has(c.id)) return;
+        seen.add(c.id);
+        merged.push(c);
+      });
+      return merged.length ? merged : state.view;
+    }
+    return FEATURED;
+  }
   function toggle() {
     const video = $("vid");
     if (!state.current) {
-      if (state.view[0]) play(state.view[0]);
+      play(FEATURED[0] || state.view[0], true);
       return;
     }
     if (state.playing) {
@@ -447,16 +526,16 @@
     } else {
       video.play().then(() => {
         state.playing = true;
-        state.status = "";
+        setStatus("");
         renderDock();
         hideChromeSoon();
       }).catch((err) => {
         if (err && err.name === "NotAllowedError") {
-          state.status = t("tap");
+          setStatus(t("tap"));
           renderDock();
           return;
         }
-        failSkip();
+        play(state.current, true);
       });
     }
     renderDock();
@@ -477,7 +556,7 @@
   }
   function pip() {
     const video = $("vid");
-    if (!document.pictureInPictureEnabled || !video.src && !state.hls) {
+    if (!document.pictureInPictureEnabled) {
       toast(t("pip"));
       return;
     }
@@ -488,7 +567,7 @@
     }
   }
   function markCurrent() {
-    document.querySelectorAll(".card[data-play]").forEach((el) => {
+    document.querySelectorAll("[data-play]").forEach((el) => {
       el.classList.toggle("on", state.current && el.dataset.play === state.current.id);
     });
   }
@@ -500,7 +579,7 @@
     stage.classList.toggle("on", state.playing);
     document.body.classList.toggle("playing", state.playing);
     document.querySelectorAll(".fav-btn").forEach((b) => b.classList.toggle("on", !!(c && isFav(c.id))));
-    $("d-kick").textContent = state.status || t("live");
+    setStatus(state.status);
     applyAudio();
     if (!c) {
       $("d-name").textContent = "IRIS";
@@ -659,12 +738,14 @@
       state.theme = btn.dataset.theme;
       applyTheme();
     });
-    $("wall").addEventListener("click", (e) => {
+    function onPlayClick(e) {
       const btn = e.target.closest("[data-play]");
       if (!btn) return;
       const ch = findCh(btn.dataset.play);
-      if (ch) play(ch);
-    });
+      if (ch) play(ch, true);
+    }
+    $("wall").addEventListener("click", onPlayClick);
+    $("now").addEventListener("click", onPlayClick);
     $("wall").addEventListener("scroll", () => {
       const el = $("wall");
       if (el.scrollTop + el.clientHeight > el.scrollHeight - 400) more();
@@ -690,8 +771,8 @@
       }
       const act = btn.dataset.act;
       if (act === "toggle") toggle();
-      else if (act === "prev") playRel(-1);
-      else if (act === "next") playRel(1);
+      else if (act === "prev") { state.fails = 0; playRel(-1); }
+      else if (act === "next") { state.fails = 0; playRel(1); }
       else if (act === "fav") toggleFav();
       else if (act === "expand") openStage();
       else if (act === "collapse") closeStage();
@@ -708,13 +789,22 @@
     $("about-btn").addEventListener("click", () => { $("about").hidden = false; });
     $("about-close").addEventListener("click", () => { $("about").hidden = true; });
     $("about").addEventListener("click", (e) => { if (e.target.id === "about") $("about").hidden = true; });
-    $("vid").addEventListener("play", () => { state.playing = true; state.status = ""; renderDock(); hideChromeSoon(); });
-    $("vid").addEventListener("pause", () => { state.playing = false; renderDock(); showChrome(); });
-    $("vid").addEventListener("error", () => failSkip());
-    $("vid").addEventListener("volumechange", () => {
-      state.vol = $("vid").volume;
-      state.muted = $("vid").muted;
-      applyAudio();
+    $("vid").addEventListener("playing", () => {
+      state.playing = true;
+      state.fails = 0;
+      setStatus("");
+      renderDock();
+      hideChromeSoon();
+    });
+    $("vid").addEventListener("pause", () => {
+      if (state.tearing) return;
+      state.playing = false;
+      renderDock();
+      showChrome();
+    });
+    $("vid").addEventListener("error", () => {
+      if (state.tearing || !state.current) return;
+      failSkip();
     });
     addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
@@ -724,8 +814,8 @@
       if (e.target.tagName === "INPUT") return;
       if (e.code === "Space") { e.preventDefault(); toggle(); }
       if (e.key === "Escape") { closeStage(); closeFilters(); closeSettings(); $("about").hidden = true; }
-      if (e.key === "n" || e.key === "N" || e.key === "ArrowRight") playRel(1);
-      if (e.key === "p" || e.key === "P" || e.key === "ArrowLeft") playRel(-1);
+      if (e.key === "n" || e.key === "N" || e.key === "ArrowRight") { state.fails = 0; playRel(1); }
+      if (e.key === "p" || e.key === "P" || e.key === "ArrowLeft") { state.fails = 0; playRel(-1); }
       if (e.key === "m" || e.key === "M") toggleMute();
       if (e.key === "f" || e.key === "F") toggleFav();
       if (e.key === "ArrowUp") { e.preventDefault(); setVol(state.vol + 0.08); }
@@ -733,16 +823,33 @@
     });
   }
 
+  async function fetchText(url) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(22000) });
+    if (!res.ok) throw new Error(String(res.status));
+    return res.text();
+  }
+  async function loadCatalog() {
+    for (const url of PLAYLISTS) {
+      try {
+        const text = await fetchText(url);
+        const parsed = parseM3U(text);
+        if (parsed.length) return parsed;
+      } catch (_) {}
+    }
+    return [];
+  }
+
   async function boot() {
     applyTheme();
     applyI18n();
     applyAudio();
     bind();
+    applyFilter();
     try {
-      const res = await fetch(SRC);
-      if (!res.ok) throw new Error(String(res.status));
-      const text = await res.text();
-      state.all = parseM3U(text);
+      const parsed = await loadCatalog();
+      const seen = new Set(FEATURED.map((c) => c.url));
+      const extra = parsed.filter((c) => !seen.has(c.url));
+      state.all = FEATURED.concat(extra);
       applyFilter();
     } catch (err) {
       $("count-line").textContent = String(err && err.message ? err.message : err);

@@ -24,7 +24,7 @@
       href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=3" />
   </head>
   <body>
     <div class="glow"></div>
@@ -48,6 +48,10 @@
       </button>
     </header>
     <div class="slim"><div class="count-line" id="count-line"></div></div>
+    <section class="now" id="now-wrap">
+      <div class="now-lab" data-i18n="now">On air now</div>
+      <div class="now-row" id="now"></div>
+    </section>
 
     <main class="wall" id="wall"></main>
 
@@ -88,6 +92,7 @@
       <div class="screen">
         <video id="vid" playsinline webkit-playsinline></video>
         <div class="scan"></div>
+        <div class="stage-status" id="s-status"></div>
         <div class="stage-ui" id="stage-ui">
           <div class="stage-top">
             <button type="button" class="ghost" data-act="collapse" data-i18n-aria="collapse">
