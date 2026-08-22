@@ -873,11 +873,71 @@
       if (state.playing) hideChromeSoon();
     }
   }
+  const layers = [];
+  let ignorePop = 0;
+  function pushLayer(id) {
+    if (layers[layers.length - 1] === id) return;
+    layers.push(id);
+    try { history.pushState({ layer: id }, ""); } catch (_) {}
+  }
+  function dropLayer(id, fromPop) {
+    const i = layers.lastIndexOf(id);
+    if (i >= 0) layers.splice(i, 1);
+    if (!fromPop) {
+      try {
+        if (history.state && history.state.layer === id) {
+          ignorePop += 1;
+          history.back();
+        }
+      } catch (_) {}
+    }
+  }
+  function consumeBack() {
+    if (fsEl() || ($("vid") && $("vid").webkitDisplayingFullscreen)) {
+      exitFS();
+      return true;
+    }
+    const id = layers[layers.length - 1];
+    if (!id) return false;
+    if (id === "stage") closeStage(true);
+    else if (id === "filters") closeFilters(true);
+    else if (id === "settings") closeSettings(true);
+    else if (id === "about") closeAbout(true);
+    else dropLayer(id, true);
+    return true;
+  }
+  function bindBack() {
+    try { history.scrollRestoration = "manual"; } catch (_) {}
+    addEventListener("popstate", () => {
+      if (ignorePop) { ignorePop -= 1; return; }
+      consumeBack();
+    });
+    document.addEventListener("backbutton", (e) => {
+      if (consumeBack()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+    addEventListener("keydown", (e) => {
+      if (e.keyCode === 4 && consumeBack()) e.preventDefault();
+    });
+    window.AndroidBack = consumeBack;
+    window.onBackPressed = consumeBack;
+    try {
+      if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) {
+        Capacitor.Plugins.App.addListener("backButton", () => {
+          if (!consumeBack() && Capacitor.Plugins.App.exitApp) Capacitor.Plugins.App.exitApp();
+        });
+      }
+    } catch (_) {}
+  }
   function openStage() {
+    const was = !$("stage").hidden;
     $("stage").hidden = false;
     document.body.classList.add("stage-open");
     showChrome();
     if (state.playing) hideChromeSoon();
+    if (!was) pushLayer("stage");
   }
   function fsEl() {
     return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
@@ -908,12 +968,14 @@
     const btn = $("s-fs");
     if (btn) btn.setAttribute("aria-label", on ? t("fsExit") : t("fs"));
   }
-  function closeStage() {
+  function closeStage(fromPop) {
+    const was = !$("stage").hidden;
     exitFS();
     $("stage").hidden = true;
     document.body.classList.remove("stage-open");
     $("stage").classList.remove("is-fs");
     showChrome();
+    if (was) dropLayer("stage", fromPop);
   }
   function fullscreen() {
     if (fsEl() || ($("vid") && $("vid").webkitDisplayingFullscreen)) {
@@ -1098,6 +1160,7 @@
   }
 
   function bind() {
+    bindBack();
     document.querySelectorAll("[data-lang]").forEach((b) => {
       b.addEventListener("click", () => {
         state.lang = b.dataset.lang === "fa" ? "fa" : "en";
@@ -1214,12 +1277,14 @@
       else if (act === "filters") toggleFilters();
       else if (act === "settings") toggleSettings();
       else if (act === "clearf") clearFilters();
+      else if (act === "share") shareCh();
+      else if (act === "resume") toggleResume();
     });
     $("filters").addEventListener("click", (e) => { if (e.target.id === "filters") closeFilters(); });
     $("settings").addEventListener("click", (e) => { if (e.target.id === "settings") closeSettings(); });
-    $("about-btn").addEventListener("click", () => { $("about").hidden = false; });
-    $("about-close").addEventListener("click", () => { $("about").hidden = true; });
-    $("about").addEventListener("click", (e) => { if (e.target.id === "about") $("about").hidden = true; });
+    $("about-btn").addEventListener("click", openAbout);
+    $("about-close").addEventListener("click", () => closeAbout());
+    $("about").addEventListener("click", (e) => { if (e.target.id === "about") closeAbout(); });
     $("vid").addEventListener("playing", () => {
       state.playing = true;
       state.fails = 0;
@@ -1245,11 +1310,11 @@
       if (e.target.tagName === "INPUT") return;
       if (e.code === "Space") { e.preventDefault(); toggle(); }
       if (e.key === "Escape") {
-        if (fsEl() || ($("vid") && $("vid").webkitDisplayingFullscreen)) return;
+        if (consumeBack()) return;
         closeStage();
         closeFilters();
         closeSettings();
-        $("about").hidden = true;
+        closeAbout();
       }
       if (e.key === "n" || e.key === "N" || e.key === "ArrowRight") { state.fails = 0; playRel(1); }
       if (e.key === "p" || e.key === "P" || e.key === "ArrowLeft") { state.fails = 0; playRel(-1); }
