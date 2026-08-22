@@ -1,7 +1,7 @@
 /* IRIS — ساخته شده توسط مبین.آ */
 (() => {
   const $ = (id) => document.getElementById(id);
-  const PAGE = 80;
+  const PAGE = 36;
   const PLAYLISTS = [
     "https://iptv-org.github.io/iptv/index.m3u",
     "https://iptv-org.github.io/iptv/categories/news.m3u",
@@ -83,6 +83,8 @@
     all: FEATURED.slice(),
     view: [],
     shown: 0,
+    painted: 0,
+    painting: false,
     q: "",
     cc: "",
     cat: "",
@@ -166,7 +168,7 @@
     renderCats();
     renderThemes();
     renderNow();
-    renderWall();
+    renderWall(true);
     renderDock();
   }
   function applyTheme() {
@@ -253,8 +255,9 @@
   function applyFilter() {
     state.view = filtered();
     state.shown = 0;
+    state.painted = 0;
     renderNow();
-    renderWall();
+    renderWall(true);
     const w = $("wall");
     if (w) w.scrollTop = 0;
     const more = $("clear-btn");
@@ -306,7 +309,7 @@
   function card(c) {
     const on = state.current && state.current.id === c.id ? "on" : "";
     const logo = c.logo
-      ? `<img class="logo" src="${esc(c.logo)}" alt="" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><div class="ph" hidden>${esc(initials(c.name))}</div>`
+      ? `<img class="logo" src="${esc(c.logo)}" alt="" width="160" height="92" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><div class="ph" hidden>${esc(initials(c.name))}</div>`
       : `<div class="ph">${esc(initials(c.name))}</div>`;
     const cat = c.groups[0] ? t(c.groups[0]) : "";
     return `<button type="button" class="card ${on}" data-play="${esc(c.id)}">
@@ -315,27 +318,48 @@
       <div class="meta">${c.cc ? flag(c.cc) + " " : ""}${esc(c.cc)} ${cat ? "· " + esc(cat) : ""}</div>
     </button>`;
   }
-  function renderWall() {
+  function renderWall(reset) {
     const box = $("wall");
     const cfn = dict().count;
     $("count-line").textContent = typeof cfn === "function" ? cfn(state.view.length) : String(state.view.length);
     if (!state.view.length) {
       box.innerHTML = `<div class="card empty">${t("empty")}</div>`;
+      state.painted = 0;
       return;
     }
-    const keep = box.scrollTop;
-    state.shown = Math.max(state.shown, PAGE);
-    const slice = state.view.slice(0, state.shown);
-    box.innerHTML = slice.map(card).join("") + '<div id="tail" class="tail"></div>';
-    box.scrollTop = keep;
+    if (reset || !box.querySelector(".card")) {
+      box.innerHTML = '<div id="tail" class="tail"></div>';
+      state.painted = 0;
+    }
+    if (state.shown < PAGE) state.shown = Math.min(PAGE, state.view.length);
+    paintMore();
+  }
+  function paintMore() {
+    const box = $("wall");
+    if (!box || state.painting) return;
+    const end = Math.min(state.shown, state.view.length);
+    if (state.painted >= end) {
+      watchTail();
+      return;
+    }
+    state.painting = true;
+    const tail = $("tail") || box.appendChild(Object.assign(document.createElement("div"), { id: "tail", className: "tail" }));
+    const frag = document.createDocumentFragment();
+    const hold = document.createElement("div");
+    hold.innerHTML = state.view.slice(state.painted, end).map(card).join("");
+    while (hold.firstChild) frag.appendChild(hold.firstChild);
+    box.insertBefore(frag, tail);
+    state.painted = end;
+    state.painting = false;
     watchTail();
   }
   function more() {
-    if (state.shown >= state.view.length) return;
-    state.shown += PAGE;
-    renderWall();
+    if (state.painting || state.shown >= state.view.length) return;
+    state.shown = Math.min(state.shown + PAGE, state.view.length);
+    paintMore();
   }
   let tailObs = null;
+  let moreLock = 0;
   function watchTail() {
     const tail = $("tail");
     const root = $("wall");
@@ -343,9 +367,13 @@
     if (!tailObs) {
       tailObs = new IntersectionObserver(
         (ents) => {
-          if (ents.some((e) => e.isIntersecting)) more();
+          if (!ents.some((e) => e.isIntersecting)) return;
+          const now = Date.now();
+          if (now - moreLock < 220) return;
+          moreLock = now;
+          more();
         },
-        { root, rootMargin: "400px" }
+        { root, rootMargin: "240px" }
       );
     }
     tailObs.disconnect();
@@ -423,7 +451,6 @@
     stopHls();
     applyAudio();
     renderDock();
-    renderNow();
     markCurrent();
     showChrome();
     openStage();
@@ -454,13 +481,18 @@
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
-        backBufferLength: 30,
-        maxBufferLength: 20,
+        capLevelToPlayerSize: true,
+        startLevel: -1,
+        backBufferLength: 4,
+        maxBufferLength: 10,
+        maxMaxBufferLength: 18,
+        maxBufferSize: 20 * 1000 * 1000,
         fragLoadingTimeOut: 8000,
         manifestLoadingTimeOut: 8000,
         fragLoadingMaxRetry: 1,
         manifestLoadingMaxRetry: 1,
         levelLoadingMaxRetry: 1,
+        testBandwidth: false,
         xhrSetup: (xhr) => { xhr.withCredentials = false; },
       });
       state.hls = hls;
@@ -568,7 +600,7 @@
   }
   function markCurrent() {
     document.querySelectorAll("[data-play]").forEach((el) => {
-      el.classList.toggle("on", state.current && el.dataset.play === state.current.id);
+      el.classList.toggle("on", !!(state.current && el.dataset.play === state.current.id));
     });
   }
   function renderDock() {
@@ -841,10 +873,6 @@
     }
     $("wall").addEventListener("click", onPlayClick);
     $("now").addEventListener("click", onPlayClick);
-    $("wall").addEventListener("scroll", () => {
-      const el = $("wall");
-      if (el.scrollTop + el.clientHeight > el.scrollHeight - 400) more();
-    });
     $("d-vol").addEventListener("input", (e) => setVol(e.target.value));
     $("stage").addEventListener("pointerdown", (e) => {
       if (e.target.closest("button, input, a")) return;
@@ -854,23 +882,29 @@
       if (e.target.closest("button, input, a")) return;
       fullscreen();
     });
+    let moveT = 0;
     $("stage").addEventListener("mousemove", () => {
-      if (!$("stage").hidden) {
-        showChrome();
-        if (state.playing) hideChromeSoon();
-      }
+      if ($("stage").hidden) return;
+      const now = Date.now();
+      if (now - moveT < 180) return;
+      moveT = now;
+      showChrome();
+      if (state.playing) hideChromeSoon();
     });
     document.addEventListener("fullscreenchange", syncFS);
     document.addEventListener("webkitfullscreenchange", syncFS);
     $("vid").addEventListener("webkitbeginfullscreen", syncFS);
     $("vid").addEventListener("webkitendfullscreen", syncFS);
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) return;
+      if (document.hidden) {
+        state.hideAt = Date.now();
+        return;
+      }
       syncWake();
-      if (state.current) seekLive();
+      if (state.current && state.hideAt && Date.now() - state.hideAt > 8000) seekLive();
     });
     tickClock();
-    setInterval(tickClock, 15000);
+    setInterval(tickClock, 30000);
     document.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-act], [data-mode]");
       if (!btn) return;
@@ -906,7 +940,6 @@
       setStatus("");
       renderDock();
       hideChromeSoon();
-      seekLive();
     });
     $("vid").addEventListener("pause", () => {
       if (state.tearing) return;
@@ -943,7 +976,8 @@
   }
 
   async function fetchText(url) {
-    const res = await fetch(url, { signal: AbortSignal.timeout(22000) });
+    const sep = url.indexOf("?") >= 0 ? "&" : "?";
+    const res = await fetch(url + sep + "iris=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(22000) });
     if (!res.ok) throw new Error(String(res.status));
     return res.text();
   }
@@ -964,6 +998,7 @@
     applyAudio();
     bind();
     applyFilter();
+    $("loader").classList.add("off");
     try {
       const parsed = await loadCatalog();
       const seen = new Set(FEATURED.map((c) => c.url));
@@ -972,8 +1007,6 @@
       applyFilter();
     } catch (err) {
       $("count-line").textContent = String(err && err.message ? err.message : err);
-    } finally {
-      $("loader").classList.add("off");
     }
   }
   boot();

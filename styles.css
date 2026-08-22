@@ -39,10 +39,7 @@ button { cursor: pointer; }
 img { display: block; max-width: 100%; }
 svg { display: block; width: 20px; height: 20px; }
 
-.glow {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(var(--bg-rgb),0.72) 100%);
-}
+.glow { display: none; }
 .top, .slim, .wall, .credit { position: relative; z-index: 2; }
 .top, .slim { flex: 0 0 auto; }
 .top { display: flex; align-items: center; gap: 10px; padding: 14px 16px 8px; }
@@ -98,11 +95,14 @@ svg { display: block; width: 20px; height: 20px; }
   grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
   gap: 12px;
   align-content: start;
+  contain: layout;
 }
 .card {
   text-align: start; color: inherit;
   background: var(--panel); border: 1px solid var(--line);
   border-radius: 18px; padding: 10px; cursor: pointer;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 168px;
 }
 .card.empty { cursor: default; grid-column: 1 / -1; padding: 28px 16px; text-align: center; color: var(--muted); }
 .card.on { border-color: var(--acc); box-shadow: 0 0 0 1px rgba(var(--acc-rgb),0.4); }
@@ -126,7 +126,7 @@ svg { display: block; width: 20px; height: 20px; }
   display: flex; align-items: center; gap: 12px;
   background: var(--panel); border: 1px solid var(--line);
   border-radius: 22px; padding: 10px 12px;
-  backdrop-filter: blur(18px);
+  backdrop-filter: none;
 }
 .dock.on { border-color: rgba(var(--acc-rgb),0.5); box-shadow: 0 12px 40px rgba(var(--acc-rgb),0.16); }
 .dock-art {
@@ -184,12 +184,7 @@ svg { display: block; width: 20px; height: 20px; }
 .stage[hidden] { display: none; }
 .screen { position: relative; flex: 1; background: #000; }
 #vid { width: 100%; height: 100%; object-fit: contain; background: #000; }
-.scan {
-  pointer-events: none; position: absolute; inset: 0;
-  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,0.08) 2px 3px);
-  opacity: 0.18;
-  transition: opacity .35s ease;
-}
+.scan { display: none; }
 .stage-ui {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; justify-content: space-between;
