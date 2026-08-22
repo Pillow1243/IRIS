@@ -74,6 +74,8 @@
   ];
   const THEMES = ["dark", "oled", "cinema", "light"];
   const ADULT = /xxx|nsfw|adult|erotic|18\+|porn/i;
+  const DEAD_HOST = /telewebion\.ir|persiana\.live|presstv\.ir|jmp2\.uk|pluto\.tv|short\.gy|xemzi\.|mcquack\.|streamlock\.net/i;
+  const NICE_HOST = /akamaized|akamai|cloudfront|france24|cbsnstream|getaj\.net|dwamd|tagesschau|ard-mcdn|redbull|nhkworld|trt\.com|newsmax|bloomberg/i;
 
   const state = {
     lang: localStorage.getItem("iris-lang") || "en",
@@ -103,6 +105,8 @@
     deferredInstall: null,
     tearing: false,
     applyingAudio: false,
+    dead: new Set(safeParse("iris-dead", [])),
+    scanning: false,
   };
 
   function clampVol(v) {
@@ -252,6 +256,12 @@
       return true;
     });
   }
+  function updateCount() {
+    const cfn = dict().count;
+    const n = state.view.length;
+    const base = typeof cfn === "function" ? cfn(n) : String(n);
+    $("count-line").textContent = state.scanning ? base + " · " + t("scanning") : base;
+  }
   function applyFilter() {
     state.view = filtered();
     state.shown = 0;
@@ -320,8 +330,7 @@
   }
   function renderWall(reset) {
     const box = $("wall");
-    const cfn = dict().count;
-    $("count-line").textContent = typeof cfn === "function" ? cfn(state.view.length) : String(state.view.length);
+    updateCount();
     if (!state.view.length) {
       box.innerHTML = `<div class="card empty">${t("empty")}</div>`;
       state.painted = 0;
@@ -512,11 +521,12 @@
   }
   function failSkip() {
     if (state.tearing) return;
+    if (state.current) bury(state.current);
     state.fails += 1;
     state.playing = false;
-    setStatus(state.fails < 12 ? t("hunting") : t("failed"));
+    setStatus(state.fails < 8 ? t("hunting") : t("failed"));
     renderDock();
-    if (state.fails < 12) setTimeout(() => playRel(1), 280);
+    if (state.fails < 8) setTimeout(() => playRel(1), 220);
     else toast(t("failed"));
   }
   function playRel(dir) {
@@ -735,15 +745,9 @@
     setRefreshing(true);
     setStatus(t("refreshing"));
     try {
+      if (state.current) play(state.current, true);
       const parsed = await loadCatalog();
-      const seen = new Set(FEATURED.map((c) => c.url));
-      const extra = parsed.filter((c) => !seen.has(c.url));
-      state.all = FEATURED.concat(extra);
-      applyFilter();
-      if (state.current) {
-        const newer = state.all.find((c) => c.id === state.current.id) || state.current;
-        play(newer, true);
-      }
+      startScan(parsed, true);
       toast(t("refreshed"));
     } catch (_) {
       if (state.current) play(state.current, true);
@@ -992,19 +996,104 @@
     return [];
   }
 
+  function hostOk(url) {
+    return !DEAD_HOST.test(url) && !state.dead.has(url);
+  }
+  function scoreCh(c) {
+    let s = 0;
+    if (NICE_HOST.test(c.url)) s += 12;
+    if (c.groups.indexOf("news") >= 0) s += 8;
+    if (c.groups.indexOf("sports") >= 0) s += 5;
+    if (["DE", "US", "GB", "FR", "IR", "TR", "NL", "JP", "QA"].indexOf(c.cc) >= 0) s += 4;
+    return s;
+  }
+  function persistDead() {
+    try { localStorage.setItem("iris-dead", JSON.stringify(Array.from(state.dead).slice(-900))); } catch (_) {}
+  }
+  function persistLive() {
+    const ch = state.all.filter((c) => !c.featured).slice(0, 500);
+    try { localStorage.setItem("iris-live", JSON.stringify({ at: Date.now(), ch: ch })); } catch (_) {}
+  }
+  function loadLiveCache() {
+    const pack = safeParse("iris-live", null);
+    if (!pack || !pack.at || Date.now() - pack.at > 12 * 3600 * 1000) return [];
+    return Array.isArray(pack.ch) ? pack.ch.filter((c) => c && c.url && hostOk(c.url)) : [];
+  }
+  function bury(ch) {
+    if (!ch || ch.featured) return;
+    state.dead.add(ch.url);
+    persistDead();
+    state.all = state.all.filter((c) => c.url !== ch.url);
+    state.view = state.view.filter((c) => c.url !== ch.url);
+    updateCount();
+  }
+  function admit(ch) {
+    if (!ch || state.all.some((c) => c.url === ch.url)) return;
+    state.all.push(ch);
+    const q = state.q.trim().toLowerCase();
+    const ok =
+      state.mode === "browse" &&
+      (!state.cc || normCC(ch.cc) === normCC(state.cc)) &&
+      (!state.cat || ch.groups.indexOf(state.cat) >= 0) &&
+      (!q || (ch.name + " " + ch.cc + " " + ch.groups.join(" ")).toLowerCase().indexOf(q) >= 0);
+    if (ok) {
+      const empty = $("wall") && $("wall").querySelector(".empty");
+      state.view.push(ch);
+      if (empty) renderWall(true);
+      else updateCount();
+    } else updateCount();
+  }
+  async function probe(url) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3500);
+    try {
+      const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store", signal: ctrl.signal });
+      if (!res.ok) return false;
+      const head = (await res.text()).slice(0, 220);
+      return head.indexOf("#EXT") >= 0 || head.indexOf("m3u8") >= 0;
+    } catch (_) {
+      return false;
+    } finally {
+      clearTimeout(t);
+    }
+  }
+  async function startScan(pool) {
+    const have = new Set(state.all.map((c) => c.url));
+    let list = pool.filter((c) => hostOk(c.url) && !have.has(c.url));
+    list.sort((a, b) => scoreCh(b) - scoreCh(a));
+    list = list.slice(0, 900);
+    state.scanning = true;
+    updateCount();
+    let i = 0;
+    let found = 0;
+    async function worker() {
+      while (i < list.length && found < 420) {
+        const ch = list[i++];
+        if (!ch || state.dead.has(ch.url)) continue;
+        const ok = await probe(ch.url);
+        if (ok) { found += 1; admit(ch); }
+        else state.dead.add(ch.url);
+      }
+    }
+    await Promise.all(Array.from({ length: 6 }, worker));
+    persistDead();
+    persistLive();
+    state.scanning = false;
+    updateCount();
+  }
+
   async function boot() {
     applyTheme();
     applyI18n();
     applyAudio();
     bind();
+    const cached = loadLiveCache();
+    if (cached.length) state.all = FEATURED.concat(cached);
     applyFilter();
     $("loader").classList.add("off");
     try {
       const parsed = await loadCatalog();
-      const seen = new Set(FEATURED.map((c) => c.url));
-      const extra = parsed.filter((c) => !seen.has(c.url));
-      state.all = FEATURED.concat(extra);
-      applyFilter();
+      startScan(parsed);
     } catch (err) {
       $("count-line").textContent = String(err && err.message ? err.message : err);
     }
