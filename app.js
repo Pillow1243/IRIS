@@ -1119,25 +1119,49 @@
   }
   function toggleFilters() {
     const el = $("filters");
-    const open = el.hidden;
-    if (open) closeSettings();
-    el.hidden = !open;
-    $("filters-btn").classList.toggle("on", open);
+    if (!el) return;
+    if (el.hidden) {
+      closeSettings();
+      el.hidden = false;
+      $("filters-btn").classList.add("on");
+      pushLayer("filters");
+    } else closeFilters();
   }
-  function closeFilters() {
-    $("filters").hidden = true;
-    $("filters-btn").classList.remove("on");
+  function closeFilters(fromPop) {
+    const el = $("filters");
+    const was = el && !el.hidden;
+    if (el) el.hidden = true;
+    if ($("filters-btn")) $("filters-btn").classList.remove("on");
+    if (was) dropLayer("filters", fromPop);
   }
   function toggleSettings() {
     const el = $("settings");
-    const open = el.hidden;
-    if (open) closeFilters();
-    el.hidden = !open;
-    $("settings-btn").classList.toggle("on", open);
+    if (!el) return;
+    if (el.hidden) {
+      closeFilters();
+      el.hidden = false;
+      $("settings-btn").classList.add("on");
+      pushLayer("settings");
+    } else closeSettings();
   }
-  function closeSettings() {
-    $("settings").hidden = true;
-    $("settings-btn").classList.remove("on");
+  function closeSettings(fromPop) {
+    const el = $("settings");
+    const was = el && !el.hidden;
+    if (el) el.hidden = true;
+    if ($("settings-btn")) $("settings-btn").classList.remove("on");
+    if (was) dropLayer("settings", fromPop);
+  }
+  function openAbout() {
+    const el = $("about");
+    if (!el) return;
+    if (el.hidden) pushLayer("about");
+    el.hidden = false;
+  }
+  function closeAbout(fromPop) {
+    const el = $("about");
+    const was = el && !el.hidden;
+    if (el) el.hidden = true;
+    if (was) dropLayer("about", fromPop);
   }
   function clearFilters() {
     state.mode = "browse";
@@ -1431,28 +1455,36 @@
   }
 
   async function boot() {
-    applyTheme();
-    applyI18n();
-    applyAudio();
-    bind();
-    const cached = loadLiveCache();
-    if (cached.length) state.all = FEATURED.concat(cached);
-    applyFilter();
-    if (state.resume) {
-      const last = findCh(localStorage.getItem("iris-last"));
-      if (last) {
-        state.current = last;
-        renderDock();
-        renderDesk();
-        renderNow();
+    try {
+      applyTheme();
+      applyI18n();
+      applyAudio();
+      bind();
+      const cached = loadLiveCache();
+      if (cached.length) state.all = FEATURED.concat(cached);
+      applyFilter();
+      if (state.resume) {
+        const last = findCh(localStorage.getItem("iris-last"));
+        if (last) {
+          state.current = last;
+          renderDock();
+          renderDesk();
+          renderNow();
+        }
       }
+    } catch (err) {
+      const line = $("count-line");
+      if (line) line.textContent = String(err && err.message ? err.message : err);
+    } finally {
+      const loader = $("loader");
+      if (loader) loader.classList.add("off");
     }
-    $("loader").classList.add("off");
     try {
       const parsed = await loadCatalog();
       startScan(parsed);
     } catch (err) {
-      $("count-line").textContent = String(err && err.message ? err.message : err);
+      const line = $("count-line");
+      if (line) line.textContent = String(err && err.message ? err.message : err);
     }
   }
   boot();
