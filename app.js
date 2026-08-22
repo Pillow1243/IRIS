@@ -14,16 +14,32 @@
     { cc: "ES", fa: "اسپانیا", en: "Spain" },
     { cc: "IT", fa: "ایتالیا", en: "Italy" },
     { cc: "NL", fa: "هلند", en: "Netherlands" },
+    { cc: "BE", fa: "بلژیک", en: "Belgium" },
+    { cc: "AT", fa: "اتریش", en: "Austria" },
+    { cc: "CH", fa: "سوئیس", en: "Switzerland" },
+    { cc: "SE", fa: "سوئد", en: "Sweden" },
+    { cc: "NO", fa: "نروژ", en: "Norway" },
+    { cc: "PL", fa: "لهستان", en: "Poland" },
+    { cc: "PT", fa: "پرتغال", en: "Portugal" },
+    { cc: "GR", fa: "یونان", en: "Greece" },
     { cc: "JP", fa: "ژاپن", en: "Japan" },
     { cc: "KR", fa: "کره", en: "Korea" },
+    { cc: "CN", fa: "چین", en: "China" },
     { cc: "IN", fa: "هند", en: "India" },
-    { cc: "BR", fa: "برزیل", en: "Brazil" },
+    { cc: "PK", fa: "پاکستان", en: "Pakistan" },
+    { cc: "AF", fa: "افغانستان", en: "Afghanistan" },
+    { cc: "IQ", fa: "عراق", en: "Iraq" },
     { cc: "AE", fa: "امارات", en: "UAE" },
+    { cc: "SA", fa: "عربستان", en: "Saudi" },
+    { cc: "QA", fa: "قطر", en: "Qatar" },
     { cc: "EG", fa: "مصر", en: "Egypt" },
+    { cc: "BR", fa: "برزیل", en: "Brazil" },
+    { cc: "AR", fa: "آرژانتین", en: "Argentina" },
+    { cc: "MX", fa: "مکزیک", en: "Mexico" },
     { cc: "CA", fa: "کانادا", en: "Canada" },
     { cc: "AU", fa: "استرالیا", en: "Australia" },
     { cc: "RU", fa: "روسیه", en: "Russia" },
-    { cc: "MX", fa: "مکزیک", en: "Mexico" },
+    { cc: "ID", fa: "اندونزی", en: "Indonesia" },
   ];
   const CATS = [
     "news", "sports", "music", "movies", "documentary", "kids",
@@ -35,6 +51,8 @@
   const state = {
     lang: localStorage.getItem("iris-lang") || "en",
     theme: localStorage.getItem("iris-theme") || "dark",
+    vol: clampVol(localStorage.getItem("iris-vol")),
+    muted: localStorage.getItem("iris-mute") === "1",
     all: [],
     view: [],
     shown: 0,
@@ -50,8 +68,17 @@
     playGen: 0,
     fails: 0,
     hls: null,
+    connectTimer: 0,
+    chromeTimer: 0,
+    chromeOn: true,
+    deferredInstall: null,
   };
 
+  function clampVol(v) {
+    const n = Number(v);
+    if (!isFinite(n)) return 1;
+    return Math.min(1, Math.max(0, n));
+  }
   function safeParse(key, fallback) {
     try {
       const raw = localStorage.getItem(key);
@@ -114,6 +141,21 @@
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", state.theme === "light" ? "#f4f4f5" : "#07070b");
     renderThemes();
+  }
+  function applyAudio() {
+    const video = $("vid");
+    video.volume = state.vol;
+    video.muted = state.muted || state.vol === 0;
+    const slider = $("d-vol");
+    if (slider) slider.value = String(state.vol);
+    document.querySelectorAll("[data-act='mute']").forEach((b) => {
+      b.classList.toggle("muted", video.muted);
+      b.setAttribute("aria-label", video.muted ? t("unmute") : t("mute"));
+    });
+    try {
+      localStorage.setItem("iris-vol", String(state.vol));
+      localStorage.setItem("iris-mute", video.muted ? "1" : "0");
+    } catch (_) {}
   }
 
   function parseM3U(text) {
@@ -179,10 +221,21 @@
     const more = $("clear-btn");
     if (more) more.hidden = !(state.cc || state.cat || state.q.trim() || state.mode !== "browse");
     $("filters-btn").classList.toggle("hot", !!(state.cc || state.cat || state.mode !== "browse"));
+    $("fav-btn").classList.toggle("on", state.mode === "fav");
+    $("rec-btn").classList.toggle("on", state.mode === "recent");
   }
 
+  function uniqueCountries() {
+    const seen = new Set();
+    return COUNTRIES.filter((c) => {
+      const k = c.cc || "WORLD";
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }
   function renderCountries() {
-    $("countries").innerHTML = COUNTRIES.map((c) => {
+    $("countries").innerHTML = uniqueCountries().map((c) => {
       const on = state.mode === "browse" && c.cc === state.cc ? "on" : "";
       const label = (c.cc ? flag(c.cc) + " " : "") + (state.lang === "fa" ? c.fa : c.en);
       return `<button type="button" class="${on}" data-cc="${c.cc}">${label}</button>`;
@@ -220,7 +273,7 @@
     const cfn = dict().count;
     $("count-line").textContent = typeof cfn === "function" ? cfn(state.view.length) : String(state.view.length);
     if (!state.view.length) {
-      box.innerHTML = `<div class="card">${t("empty")}</div>`;
+      box.innerHTML = `<div class="card empty">${t("empty")}</div>`;
       return;
     }
     const keep = box.scrollTop;
@@ -279,6 +332,17 @@
       try { state.hls.destroy(); } catch (_) {}
       state.hls = null;
     }
+    if (state.connectTimer) {
+      clearTimeout(state.connectTimer);
+      state.connectTimer = 0;
+    }
+  }
+  function armConnect(gen) {
+    if (state.connectTimer) clearTimeout(state.connectTimer);
+    state.connectTimer = setTimeout(() => {
+      if (gen !== state.playGen || state.playing) return;
+      failSkip();
+    }, 14000);
   }
   function play(ch) {
     if (!ch) return;
@@ -293,8 +357,10 @@
     stopHls();
     video.pause();
     try { video.removeAttribute("src"); video.load(); } catch (_) {}
+    applyAudio();
     renderDock();
     markCurrent();
+    showChrome();
     const url = ch.url;
     const onReady = () => {
       if (gen !== state.playGen) return;
@@ -303,18 +369,43 @@
         state.playing = true;
         state.status = "";
         state.fails = 0;
+        if (state.connectTimer) { clearTimeout(state.connectTimer); state.connectTimer = 0; }
         renderDock();
-      }).catch(() => failSkip());
+        hideChromeSoon();
+      }).catch((err) => {
+        if (err && err.name === "NotAllowedError") {
+          state.playing = false;
+          state.status = t("tap");
+          renderDock();
+          return;
+        }
+        failSkip();
+      });
     };
+    armConnect(gen);
     if (window.Hls && Hls.isSupported()) {
-      const hls = new Hls({ enableWorker: true, lowLatencyMode: false, xhrSetup: (xhr) => { xhr.withCredentials = false; } });
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        maxBufferLength: 30,
+        fragLoadingTimeOut: 15000,
+        manifestLoadingTimeOut: 12000,
+        xhrSetup: (xhr) => { xhr.withCredentials = false; },
+      });
       state.hls = hls;
       hls.loadSource(url);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, onReady);
       hls.on(Hls.Events.ERROR, (_, data) => {
-        if (gen !== state.playGen) return;
-        if (data && data.fatal) failSkip();
+        if (gen !== state.playGen || !data) return;
+        if (!data.fatal) return;
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          try { hls.startLoad(); } catch (_) { failSkip(); }
+        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          try { hls.recoverMediaError(); } catch (_) { failSkip(); }
+        } else {
+          failSkip();
+        }
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = url;
@@ -329,7 +420,8 @@
     state.playing = false;
     state.status = t("failed");
     renderDock();
-    if (state.fails < 3) setTimeout(() => playRel(1), 600);
+    toast(t("failed"));
+    if (state.fails < 3) setTimeout(() => playRel(1), 500);
   }
   function playRel(dir) {
     const list = state.view.length ? state.view : state.all;
@@ -351,14 +443,49 @@
     if (state.playing) {
       video.pause();
       state.playing = false;
+      showChrome();
     } else {
       video.play().then(() => {
         state.playing = true;
         state.status = "";
         renderDock();
-      }).catch(() => failSkip());
+        hideChromeSoon();
+      }).catch((err) => {
+        if (err && err.name === "NotAllowedError") {
+          state.status = t("tap");
+          renderDock();
+          return;
+        }
+        failSkip();
+      });
     }
     renderDock();
+  }
+  function toggleMute() {
+    if (state.muted || state.vol === 0) {
+      state.muted = false;
+      if (state.vol === 0) state.vol = 0.7;
+    } else {
+      state.muted = true;
+    }
+    applyAudio();
+  }
+  function setVol(v) {
+    state.vol = clampVol(v);
+    state.muted = state.vol === 0;
+    applyAudio();
+  }
+  function pip() {
+    const video = $("vid");
+    if (!document.pictureInPictureEnabled || !video.src && !state.hls) {
+      toast(t("pip"));
+      return;
+    }
+    if (document.pictureInPictureElement) {
+      document.exitPictureInPicture().catch(() => {});
+    } else {
+      video.requestPictureInPicture().catch(() => toast(t("pip")));
+    }
   }
   function markCurrent() {
     document.querySelectorAll(".card[data-play]").forEach((el) => {
@@ -374,6 +501,7 @@
     document.body.classList.toggle("playing", state.playing);
     document.querySelectorAll(".fav-btn").forEach((b) => b.classList.toggle("on", !!(c && isFav(c.id))));
     $("d-kick").textContent = state.status || t("live");
+    applyAudio();
     if (!c) {
       $("d-name").textContent = "IRIS";
       $("s-name").textContent = "IRIS";
@@ -391,20 +519,46 @@
     if (c.logo) {
       img.hidden = false;
       ph.hidden = true;
-      if (img.src !== c.logo) img.src = c.logo;
+      if (img.getAttribute("src") !== c.logo) img.src = c.logo;
     } else {
       img.hidden = true;
       ph.hidden = false;
       ph.textContent = initials(c.name);
     }
   }
+  function showChrome() {
+    state.chromeOn = true;
+    $("stage").classList.remove("chrome-off");
+    if (state.chromeTimer) clearTimeout(state.chromeTimer);
+  }
+  function hideChromeSoon() {
+    if (state.chromeTimer) clearTimeout(state.chromeTimer);
+    state.chromeTimer = setTimeout(() => {
+      if (!state.playing) return;
+      state.chromeOn = false;
+      $("stage").classList.add("chrome-off");
+    }, 2800);
+  }
+  function toggleChrome() {
+    if (state.chromeOn) {
+      state.chromeOn = false;
+      $("stage").classList.add("chrome-off");
+      if (state.chromeTimer) clearTimeout(state.chromeTimer);
+    } else {
+      showChrome();
+      if (state.playing) hideChromeSoon();
+    }
+  }
   function openStage() {
     $("stage").hidden = false;
     document.body.classList.add("stage-open");
+    showChrome();
+    if (state.playing) hideChromeSoon();
   }
   function closeStage() {
     $("stage").hidden = true;
     document.body.classList.remove("stage-open");
+    showChrome();
   }
   function fullscreen() {
     const el = $("stage");
@@ -449,6 +603,15 @@
     renderCountries();
     renderCats();
     applyFilter();
+  }
+  async function install() {
+    if (state.deferredInstall) {
+      state.deferredInstall.prompt();
+      try { await state.deferredInstall.userChoice; } catch (_) {}
+      state.deferredInstall = null;
+      return;
+    }
+    toast(t("installed"));
   }
 
   function bind() {
@@ -506,6 +669,17 @@
       const el = $("wall");
       if (el.scrollTop + el.clientHeight > el.scrollHeight - 400) more();
     });
+    $("d-vol").addEventListener("input", (e) => setVol(e.target.value));
+    $("stage").addEventListener("pointerdown", (e) => {
+      if (e.target.closest("button, input, a")) return;
+      toggleChrome();
+    });
+    $("stage").addEventListener("mousemove", () => {
+      if (!$("stage").hidden) {
+        showChrome();
+        if (state.playing) hideChromeSoon();
+      }
+    });
     document.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-act], [data-mode]");
       if (!btn) return;
@@ -522,6 +696,9 @@
       else if (act === "expand") openStage();
       else if (act === "collapse") closeStage();
       else if (act === "fs") fullscreen();
+      else if (act === "mute") toggleMute();
+      else if (act === "pip") pip();
+      else if (act === "install") install();
       else if (act === "filters") toggleFilters();
       else if (act === "settings") toggleSettings();
       else if (act === "clearf") clearFilters();
@@ -531,22 +708,35 @@
     $("about-btn").addEventListener("click", () => { $("about").hidden = false; });
     $("about-close").addEventListener("click", () => { $("about").hidden = true; });
     $("about").addEventListener("click", (e) => { if (e.target.id === "about") $("about").hidden = true; });
-    $("vid").addEventListener("play", () => { state.playing = true; state.status = ""; renderDock(); });
-    $("vid").addEventListener("pause", () => { state.playing = false; renderDock(); });
+    $("vid").addEventListener("play", () => { state.playing = true; state.status = ""; renderDock(); hideChromeSoon(); });
+    $("vid").addEventListener("pause", () => { state.playing = false; renderDock(); showChrome(); });
     $("vid").addEventListener("error", () => failSkip());
+    $("vid").addEventListener("volumechange", () => {
+      state.vol = $("vid").volume;
+      state.muted = $("vid").muted;
+      applyAudio();
+    });
+    addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      state.deferredInstall = e;
+    });
     addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT") return;
       if (e.code === "Space") { e.preventDefault(); toggle(); }
       if (e.key === "Escape") { closeStage(); closeFilters(); closeSettings(); $("about").hidden = true; }
-      if (e.key === "n" || e.key === "N") playRel(1);
-      if (e.key === "p" || e.key === "P") playRel(-1);
+      if (e.key === "n" || e.key === "N" || e.key === "ArrowRight") playRel(1);
+      if (e.key === "p" || e.key === "P" || e.key === "ArrowLeft") playRel(-1);
+      if (e.key === "m" || e.key === "M") toggleMute();
       if (e.key === "f" || e.key === "F") toggleFav();
+      if (e.key === "ArrowUp") { e.preventDefault(); setVol(state.vol + 0.08); }
+      if (e.key === "ArrowDown") { e.preventDefault(); setVol(state.vol - 0.08); }
     });
   }
 
   async function boot() {
     applyTheme();
     applyI18n();
+    applyAudio();
     bind();
     try {
       const res = await fetch(SRC);
