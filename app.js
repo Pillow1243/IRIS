@@ -9,6 +9,9 @@
     "https://iptv-org.github.io/iptv/countries/ir.m3u",
   ];
   const FEATURED = [
+    { id: "feat-bbc-fa", name: "بی‌بی‌سی فارسی", cc: "GB", groups: ["news"], desk: "persian", yt: "I0PU3dgFnGQ", ytChan: "UCHZk9MrT3DGWmVqdsj5y0EA", logo: "https://i.ytimg.com/vi/I0PU3dgFnGQ/mqdefault.jpg" },
+    { id: "feat-iranintl", name: "ایران اینترنشنال", cc: "GB", groups: ["news"], desk: "persian", yt: "5JDxjsAVaGk", ytChan: "UCat6bC0Wrqq9Bcq7EkH_yQw", logo: "https://i.ytimg.com/vi/5JDxjsAVaGk/mqdefault.jpg" },
+    { id: "feat-voa-fa", name: "صدای آمریکا", cc: "US", groups: ["news"], desk: "persian", yt: "UzRuHWrN-gE", ytChan: "UCttfDeGMwUxPjnlsKagcwKw", logo: "https://i.ytimg.com/vi/UzRuHWrN-gE/mqdefault.jpg" },
     { id: "feat-dw-en", name: "DW English", cc: "DE", groups: ["news"], url: "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8" },
     { id: "feat-dw-de", name: "DW Deutsch", cc: "DE", groups: ["news"], url: "https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8" },
     { id: "feat-dw-ar", name: "DW العربية", cc: "DE", groups: ["news"], url: "https://dwamdstream103.akamaized.net/hls/live/2015526/dwstream103/master.m3u8" },
@@ -39,9 +42,33 @@
     { id: "feat-br", name: "BR Fernsehen", cc: "DE", groups: ["general"], url: "https://mcdn.br.de/br/fs/bfs_sued/hls/de/master.m3u8" },
     { id: "feat-cbsn-ny", name: "CBS News New York", cc: "US", groups: ["news"], url: "https://cbsn-ny.cbsnstream.cbsnews.com/out/v1/ec3897d58a9b45129a77d67aa247d136/master.m3u8" },
     { id: "feat-1tvge", name: "1TV Georgia", cc: "GE", groups: ["general"], url: "https://tv.cdn.xsg.ge/gpb-1tv/index.m3u8" },
-    { id: "feat-247", name: "247 Box TV", cc: "IR", groups: ["general"], url: "https://hls.247box.live/hls/stream.m3u8" },
+    { id: "feat-247", name: "247 Box TV", cc: "IR", groups: ["general"], desk: "persian", url: "https://hls.247box.live/hls/stream.m3u8" },
     { id: "feat-4u", name: "4U TV", cc: "TR", groups: ["general"], url: "https://hls.4utv.live/hls/stream.m3u8" },
-  ].map((c) => ({ logo: "", ...c, featured: true }));
+    { id: "feat-cgtn-doc", name: "CGTN Documentary", cc: "CN", groups: ["documentary"], url: "https://news.cgtn.com/resource/live/document/cgtn-doc.m3u8" },
+    { id: "feat-cgtn-fr", name: "CGTN Français", cc: "CN", groups: ["news"], url: "https://news.cgtn.com/resource/live/french/cgtn-f.m3u8" },
+    { id: "feat-cgtn-es", name: "CGTN Español", cc: "CN", groups: ["news"], url: "https://news.cgtn.com/resource/live/espanol/cgtn-e.m3u8" },
+    { id: "feat-cgtn-ar", name: "CGTN العربية", cc: "CN", groups: ["news"], url: "https://news.cgtn.com/resource/live/arabic/cgtn-a.m3u8" },
+    { id: "feat-cgtn-ru", name: "CGTN Русский", cc: "CN", groups: ["news"], url: "https://news.cgtn.com/resource/live/russian/cgtn-r.m3u8" },
+    { id: "feat-alpha", name: "ARD-alpha", cc: "DE", groups: ["science"], url: "https://mcdn.br.de/br/fs/ard_alpha/hls/de/master.m3u8" },
+    { id: "feat-ndr-hh", name: "NDR Hamburg", cc: "DE", groups: ["general"], url: "https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_hh/master.m3u8" },
+    { id: "feat-ndr-sh", name: "NDR Schleswig-Holstein", cc: "DE", groups: ["general"], url: "https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_sh/master.m3u8" },
+    { id: "feat-ndr-mv", name: "NDR Mecklenburg", cc: "DE", groups: ["general"], url: "https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_mv/master.m3u8" },
+    { id: "feat-br-nord", name: "BR Nord", cc: "DE", groups: ["general"], url: "https://mcdn.br.de/br/fs/bfs_nord/hls/de/master.m3u8" },
+    { id: "feat-arirang", name: "Arirang", cc: "KR", groups: ["news"], url: "https://amdlive-ch01-ctnd-com.akamaized.net/arirang_1ch/smil:arirang_1ch.smil/playlist.m3u8" },
+    { id: "feat-trt-haber", name: "TRT Haber", cc: "TR", groups: ["news"], url: "https://tv-trthaber.medya.trt.com.tr/master.m3u8" },
+    { id: "feat-trt-cocuk", name: "TRT Çocuk", cc: "TR", groups: ["kids"], url: "https://tv-trtcocuk.medya.trt.com.tr/master.m3u8" },
+    { id: "feat-trt-muzik", name: "TRT Müzik", cc: "TR", groups: ["music"], url: "https://tv-trtmuzik.medya.trt.com.tr/master.m3u8" },
+    { id: "feat-trt-arabi", name: "TRT عربي", cc: "TR", groups: ["news"], url: "https://tv-trtarabi.medya.trt.com.tr/master.m3u8" },
+    { id: "feat-trt-avaz", name: "TRT Avaz", cc: "TR", groups: ["general"], url: "https://tv-trtavaz.medya.trt.com.tr/master.m3u8" },
+    { id: "feat-bb-eu", name: "Bloomberg Europe", cc: "US", groups: ["news", "business"], url: "https://bloomberg.com/media-manifest/streams/eu.m3u8" },
+    { id: "feat-bb-qt", name: "Bloomberg Quicktake", cc: "US", groups: ["news", "business"], url: "https://bloomberg.com/media-manifest/streams/qt.m3u8" },
+    { id: "feat-dw-es", name: "DW Español", cc: "DE", groups: ["news"], url: "https://dwamdstream105.akamaized.net/hls/live/2015531/dwstream105/index.m3u8" },
+    { id: "feat-sky2", name: "Sky News Extra 2", cc: "AU", groups: ["news"], url: "https://skynewsau-live.akamaized.net/hls/live/2002690/skynewsau-extra2/master.m3u8" },
+    { id: "feat-sky3", name: "Sky News Extra 3", cc: "AU", groups: ["news"], url: "https://skynewsau-live.akamaized.net/hls/live/2002691/skynewsau-extra3/master.m3u8" },
+    { id: "feat-cna", name: "CNA", cc: "SG", groups: ["news"], url: "https://d2e1asnsl7br7b.cloudfront.net/7782e205e72f43aeb4a48ec97f66ebbe/index.m3u8" },
+    { id: "feat-cas", name: "Classic Arts", cc: "US", groups: ["culture", "music"], url: "https://classicarts.akamaized.net/hls/live/1024257/CAS/master.m3u8" },
+    { id: "feat-2tvge", name: "2TV Georgia", cc: "GE", groups: ["general"], url: "https://tv.cdn.xsg.ge/gpb-2tv/index.m3u8" },
+  ].map((c) => ({ logo: "", url: "", ...c, featured: true }));
   const COUNTRIES = [
     { cc: "", fa: "جهان", en: "World" },
     { cc: "IR", fa: "ایران", en: "Iran" },
@@ -77,6 +104,7 @@
     { cc: "MX", fa: "مکزیک", en: "Mexico" },
     { cc: "CA", fa: "کانادا", en: "Canada" },
     { cc: "AU", fa: "استرالیا", en: "Australia" },
+    { cc: "SG", fa: "سنگاپور", en: "Singapore" },
     { cc: "RU", fa: "روسیه", en: "Russia" },
     { cc: "ID", fa: "اندونزی", en: "Indonesia" },
   ];
@@ -119,6 +147,10 @@
     applyingAudio: false,
     dead: new Set(safeParse("iris-dead", [])),
     scanning: false,
+    sleepMins: 0,
+    sleepTimer: 0,
+    resume: localStorage.getItem("iris-resume") !== "0",
+    ytOn: false,
   };
 
   function clampVol(v) {
@@ -184,6 +216,10 @@
     renderCats();
     renderThemes();
     renderNow();
+    renderDesk();
+    renderQuick();
+    renderSleeps();
+    renderResume();
     renderWall(true);
     renderDock();
   }
@@ -257,11 +293,21 @@
     });
   }
 
+  function isPersian(c) {
+    if (!c) return false;
+    if (c.desk === "persian") return true;
+    if (normCC(c.cc) === "IR") return true;
+    return /persian|farsi|فارسی|ایران اینترنشنال|صدای آمریکا|بی‌بی‌سی فارسی/i.test(c.name || "");
+  }
+  function isYt(c) {
+    return !!(c && (c.yt || c.ytChan));
+  }
   function filtered() {
     if (state.mode === "fav") return state.favs.slice();
     if (state.mode === "recent") return state.recents.slice();
     const q = state.q.trim().toLowerCase();
     return state.all.filter((c) => {
+      if (state.mode === "persian" && !isPersian(c)) return false;
       if (state.cc && normCC(c.cc) !== normCC(state.cc)) return false;
       if (state.cat && c.groups.indexOf(state.cat) < 0) return false;
       if (q && (c.name + " " + c.cc + " " + c.groups.join(" ")).toLowerCase().indexOf(q) < 0) return false;
@@ -279,6 +325,8 @@
     state.shown = 0;
     state.painted = 0;
     renderNow();
+    renderDesk();
+    renderQuick();
     renderWall(true);
     const w = $("wall");
     if (w) w.scrollTop = 0;
@@ -323,10 +371,47 @@
   function renderNow() {
     const box = $("now");
     if (!box) return;
-    box.innerHTML = FEATURED.map((c) => {
+    box.innerHTML = FEATURED.filter((c) => !isPersian(c)).map((c) => {
       const on = state.current && state.current.id === c.id ? "on" : "";
       return `<button type="button" class="chip ${on}" data-play="${esc(c.id)}">${flag(c.cc)} ${esc(c.name)}</button>`;
     }).join("");
+  }
+  function renderDesk() {
+    const box = $("desk");
+    if (!box) return;
+    box.innerHTML = FEATURED.filter(isPersian).map((c) => {
+      const on = state.current && state.current.id === c.id ? "on" : "";
+      return `<button type="button" class="chip ${on}" data-play="${esc(c.id)}">${flag(c.cc)} ${esc(c.name)}</button>`;
+    }).join("");
+  }
+  function renderQuick() {
+    const box = $("quick");
+    if (!box) return;
+    const items = [
+      { id: "world", on: state.mode === "browse" && !state.cc && !state.cat, act: "world" },
+      { id: "persian", on: state.mode === "persian", act: "persian" },
+      { id: "news", on: state.cat === "news", act: "cat", val: "news" },
+      { id: "sports", on: state.cat === "sports", act: "cat", val: "sports" },
+      { id: "kids", on: state.cat === "kids", act: "cat", val: "kids" },
+      { id: "germany", on: state.cc === "DE", act: "cc", val: "DE" },
+      { id: "music", on: state.cat === "music", act: "cat", val: "music" },
+    ];
+    box.innerHTML = items.map((it) => {
+      return `<button type="button" class="${it.on ? "on" : ""}" data-quick="${it.act}" data-val="${it.val || ""}">${t(it.id)}</button>`;
+    }).join("");
+  }
+  function renderSleeps() {
+    const box = $("sleeps");
+    if (!box) return;
+    const opts = [0, 15, 30, 60];
+    box.innerHTML = opts.map((n) => {
+      const label = n ? String(n) : t("off");
+      return `<button type="button" class="${state.sleepMins === n ? "on" : ""}" data-sleep="${n}">${label}</button>`;
+    }).join("");
+  }
+  function renderResume() {
+    const btn = $("resume-btn");
+    if (btn) btn.classList.toggle("on", state.resume);
   }
   function card(c) {
     const on = state.current && state.current.id === c.id ? "on" : "";
@@ -334,15 +419,58 @@
       ? `<img class="logo" src="${esc(c.logo)}" alt="" width="160" height="92" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><div class="ph" hidden>${esc(initials(c.name))}</div>`
       : `<div class="ph">${esc(initials(c.name))}</div>`;
     const cat = c.groups[0] ? t(c.groups[0]) : "";
+    const yt = isYt(c) ? `<span class="badge-yt">${t("yt")}</span>` : "";
     return `<button type="button" class="card ${on}" data-play="${esc(c.id)}">
-      ${logo}
+      ${logo}${yt}
       <div class="nm">${esc(c.name)}</div>
       <div class="meta">${c.cc ? flag(c.cc) + " " : ""}${esc(c.cc)} ${cat ? "· " + esc(cat) : ""}</div>
     </button>`;
   }
+  function useHome() {
+    return state.mode === "browse" && !state.cc && !state.cat && !state.q.trim();
+  }
+  function pickRail(fn, n) {
+    const seen = new Set();
+    const out = [];
+    state.all.forEach((c) => {
+      if (out.length >= n) return;
+      if (!fn(c) || seen.has(c.id)) return;
+      seen.add(c.id);
+      out.push(c);
+    });
+    return out;
+  }
+  function renderHome() {
+    const box = $("wall");
+    if (!box) return;
+    box.classList.add("home");
+    const rails = [
+      { key: "persian", items: pickRail(isPersian, 12) },
+      { key: "news", items: pickRail((c) => c.groups.indexOf("news") >= 0, 18) },
+      { key: "germany", items: pickRail((c) => normCC(c.cc) === "DE", 16) },
+      { key: "kids", items: pickRail((c) => c.groups.indexOf("kids") >= 0, 10) },
+      { key: "sports", items: pickRail((c) => c.groups.indexOf("sports") >= 0, 10) },
+      { key: "music", items: pickRail((c) => c.groups.indexOf("music") >= 0 || c.groups.indexOf("culture") >= 0, 10) },
+    ];
+    const rest = state.view.filter((c) => !c.featured);
+    box.innerHTML =
+      rails.filter((r) => r.items.length).map((r) => {
+        return `<div class="rail"><div class="rail-lab">${t(r.key)}</div><div class="rail-row">${r.items.map(card).join("")}</div></div>`;
+      }).join("") +
+      (rest.length
+        ? `<div class="rail-lab">${t("all")}</div><div class="rail-grid" id="rail-grid">${rest.slice(0, state.shown || PAGE).map(card).join("")}</div><div id="tail" class="tail"></div>`
+        : `<div id="tail" class="tail"></div>`);
+    state.painted = Math.min(state.shown || PAGE, rest.length);
+    watchTail();
+  }
   function renderWall(reset) {
     const box = $("wall");
     updateCount();
+    if (useHome()) {
+      if (reset || !box.classList.contains("home")) renderHome();
+      return;
+    }
+    box.classList.remove("home");
     if (!state.view.length) {
       box.innerHTML = `<div class="card empty">${t("empty")}</div>`;
       state.painted = 0;
@@ -375,8 +503,9 @@
     watchTail();
   }
   function more() {
-    if (state.painting || state.shown >= state.view.length) return;
-    state.shown = Math.min(state.shown + PAGE, state.view.length);
+    const total = useHome() ? state.view.filter((c) => !c.featured).length : state.view.length;
+    if (state.painting || state.shown >= total) return;
+    state.shown = Math.min(state.shown + PAGE, total);
     paintMore();
   }
   let tailObs = null;
@@ -424,6 +553,48 @@
     renderDock();
   }
 
+  function stopYt() {
+    const frame = $("yt");
+    if (frame) {
+      try { frame.src = "about:blank"; } catch (_) {}
+      frame.hidden = true;
+    }
+    const video = $("vid");
+    if (video) video.hidden = false;
+    const stage = $("stage");
+    if (stage) stage.classList.remove("has-yt");
+    state.ytOn = false;
+  }
+  function ytCmd(fn, args) {
+    const frame = $("yt");
+    if (!frame || !frame.contentWindow || !state.ytOn) return;
+    try {
+      frame.contentWindow.postMessage(JSON.stringify({ event: "command", func: fn, args: args || [] }), "*");
+    } catch (_) {}
+  }
+  function ytSrc(ch) {
+    const origin = encodeURIComponent(location.origin);
+    const extra = `autoplay=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&enablejsapi=1&origin=${origin}`;
+    if (ch.yt) return `https://www.youtube.com/embed/${ch.yt}?${extra}`;
+    return `https://www.youtube.com/embed/live_stream?channel=${ch.ytChan}&${extra}`;
+  }
+  function playYt(ch) {
+    stopHls();
+    const video = $("vid");
+    video.hidden = true;
+    const frame = $("yt");
+    const stage = $("stage");
+    if (stage) stage.classList.add("has-yt");
+    frame.hidden = false;
+    frame.src = ytSrc(ch);
+    state.ytOn = true;
+    state.playing = true;
+    state.fails = 0;
+    setStatus("");
+    if (state.connectTimer) { clearTimeout(state.connectTimer); state.connectTimer = 0; }
+    renderDock();
+    hideChromeSoon();
+  }
   function stopHls() {
     state.tearing = true;
     if (state.hls) {
@@ -470,11 +641,17 @@
     state.recents = [ch, ...state.recents.filter((x) => x.id !== ch.id)].slice(0, 40);
     try { localStorage.setItem("iris-recents", JSON.stringify(state.recents)); } catch (_) {}
     stopHls();
+    stopYt();
     applyAudio();
     renderDock();
     markCurrent();
     showChrome();
     openStage();
+    try { localStorage.setItem("iris-last", ch.id); } catch (_) {}
+    if (isYt(ch)) {
+      playYt(ch);
+      return;
+    }
     const url = ch.url;
     const onReady = () => {
       if (gen !== state.playGen) return;
@@ -574,9 +751,15 @@
       return;
     }
     if (state.playing) {
-      video.pause();
+      if (state.ytOn) ytCmd("pauseVideo");
+      else video.pause();
       state.playing = false;
       showChrome();
+    } else if (state.ytOn) {
+      ytCmd("playVideo");
+      state.playing = true;
+      setStatus("");
+      hideChromeSoon();
     } else {
       video.play().then(() => {
         state.playing = true;
@@ -602,13 +785,19 @@
       state.muted = true;
     }
     applyAudio();
+    if (state.ytOn) ytCmd(state.muted ? "mute" : "unMute");
   }
   function setVol(v) {
     state.vol = clampVol(v);
     state.muted = state.vol === 0;
     applyAudio();
+    if (state.ytOn) ytCmd("setVolume", [Math.round(state.vol * 100)]);
   }
   function pip() {
+    if (state.ytOn) {
+      toast(t("pip"));
+      return;
+    }
     const video = $("vid");
     if (!document.pictureInPictureEnabled) {
       toast(t("pip"));
@@ -794,6 +983,78 @@
     clearTimeout(toast._t);
     toast._t = setTimeout(() => { el.hidden = true; }, 1600);
   }
+  async function shareCh() {
+    const c = state.current;
+    const url = "https://pillow1243.github.io/IRIS/";
+    const text = c ? c.name + " — IRIS · Mobin.A" : "IRIS — Live television · Mobin.A";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "IRIS", text: text, url: url });
+        return;
+      }
+    } catch (_) {}
+    try {
+      await navigator.clipboard.writeText(text + "\n" + url);
+      toast(t("copied"));
+    } catch (_) {
+      toast(url);
+    }
+  }
+  function setSleep(mins) {
+    mins = Number(mins) || 0;
+    state.sleepMins = mins;
+    if (state.sleepTimer) {
+      clearTimeout(state.sleepTimer);
+      state.sleepTimer = 0;
+    }
+    renderSleeps();
+    if (!mins) {
+      toast(t("sleepOff"));
+      return;
+    }
+    state.sleepTimer = setTimeout(() => {
+      state.sleepTimer = 0;
+      state.sleepMins = 0;
+      if (state.ytOn) ytCmd("pauseVideo");
+      else {
+        try { $("vid").pause(); } catch (_) {}
+      }
+      state.playing = false;
+      renderSleeps();
+      renderDock();
+      showChrome();
+      toast(t("sleepDone"));
+    }, mins * 60 * 1000);
+    const fn = t("sleepSet");
+    toast(typeof fn === "function" ? fn(mins) : String(mins));
+  }
+  function toggleResume() {
+    state.resume = !state.resume;
+    try { localStorage.setItem("iris-resume", state.resume ? "1" : "0"); } catch (_) {}
+    renderResume();
+  }
+  function applyQuick(act, val) {
+    if (act === "world") {
+      state.mode = "browse";
+      state.cc = "";
+      state.cat = "";
+    } else if (act === "persian") {
+      state.mode = "persian";
+      state.cc = "";
+      state.cat = "";
+    } else if (act === "cat") {
+      state.mode = "browse";
+      state.cc = "";
+      state.cat = val || "";
+    } else if (act === "cc") {
+      state.mode = "browse";
+      state.cat = "";
+      state.cc = val || "";
+    }
+    renderCountries();
+    renderCats();
+    applyFilter();
+  }
   function toggleFilters() {
     const el = $("filters");
     const open = el.hidden;
@@ -889,6 +1150,15 @@
     }
     $("wall").addEventListener("click", onPlayClick);
     $("now").addEventListener("click", onPlayClick);
+    if ($("desk")) $("desk").addEventListener("click", onPlayClick);
+    if ($("quick")) $("quick").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-quick]");
+      if (btn) applyQuick(btn.dataset.quick, btn.dataset.val);
+    });
+    if ($("sleeps")) $("sleeps").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-sleep]");
+      if (btn) setSleep(btn.dataset.sleep);
+    });
     $("d-vol").addEventListener("input", (e) => setVol(e.target.value));
     $("stage").addEventListener("pointerdown", (e) => {
       if (e.target.closest("button, input, a")) return;
@@ -1092,6 +1362,7 @@
     persistLive();
     state.scanning = false;
     updateCount();
+    if (useHome()) renderHome();
   }
 
   async function boot() {
@@ -1102,6 +1373,15 @@
     const cached = loadLiveCache();
     if (cached.length) state.all = FEATURED.concat(cached);
     applyFilter();
+    if (state.resume) {
+      const last = findCh(localStorage.getItem("iris-last"));
+      if (last) {
+        state.current = last;
+        renderDock();
+        renderDesk();
+        renderNow();
+      }
+    }
     $("loader").classList.add("off");
     try {
       const parsed = await loadCatalog();
