@@ -69,7 +69,15 @@ svg { display: block; width: 20px; height: 20px; }
 .slim { padding: 0 18px 8px; }
 .count-line { font-size: 12px; color: var(--muted); }
 .now { position: relative; z-index: 2; flex: 0 0 auto; padding: 0 16px 10px; }
-.now-lab { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: var(--acc); margin-bottom: 8px; }
+.now-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.now-lab { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; color: var(--acc); }
+.ghost.tiny { padding: 5px 10px; font-size: 12px; }
+.icon-btn.spin svg, .ghost.spin svg { animation: iris-spin .8s linear infinite; }
+@keyframes iris-spin { to { transform: rotate(360deg); } }
+.clock { margin-inline-start: 10px; letter-spacing: 0.08em; color: #fff; opacity: 0.8; }
+.fs-btn .ic-fs-out { display: none; }
+.stage.is-fs .fs-btn .ic-fs-in { display: none; }
+.stage.is-fs .fs-btn .ic-fs-out { display: block; }
 .now-row { display: flex; gap: 8px; overflow: auto; padding-bottom: 4px; }
 .now-row .chip {
   flex: 0 0 auto; border: 1px solid var(--line); background: var(--panel); color: inherit;
@@ -279,6 +287,7 @@ html[dir="rtl"] .stage-ctrls .ghost[data-act="next"] svg { transform: scaleX(-1)
   .brand .tag { display: none; }
   .top { padding: 10px 12px 6px; }
   .vol { display: none; }
+  .dock [data-act="refresh"] { display: none; }
   .dock { inset-inline: 10px; bottom: 10px; gap: 8px; }
   .dock-ctrls { gap: 4px; }
   .ghost { width: 36px; height: 36px; }
