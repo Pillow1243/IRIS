@@ -47,7 +47,7 @@ svg { display: block; width: 20px; height: 20px; }
   display: flex; gap: 10px; align-items: center;
   background: none; border: 0; color: inherit; text-align: start;
 }
-.brand img { border-radius: 12px; }
+.brand img { border-radius: 999px; }
 .word { font-family: var(--disp); letter-spacing: 0.28em; font-weight: 800; }
 .tag { font-size: 11px; color: var(--muted); }
 .search { flex: 1; }
@@ -248,7 +248,7 @@ body.playing .credit, body.stage-open .dock, body.stage-open .credit { visibilit
   border-radius: 24px; padding: 26px 22px 18px; text-align: center;
 }
 html[data-theme="light"] .about-card { background: #fff; }
-.about-card img { margin: 0 auto 10px; border-radius: 16px; }
+.about-card img { margin: 0 auto 10px; border-radius: 999px; }
 .about-body { font-size: 14px; line-height: 1.85; color: var(--muted); }
 .about-maker { color: var(--acc); margin: 12px 0; font-weight: 800; }
 .tg {
@@ -264,7 +264,7 @@ html[data-theme="light"] .about-card { background: #fff; }
   transition: opacity .45s ease, visibility .45s ease;
 }
 #loader.off { opacity: 0; visibility: hidden; pointer-events: none; }
-#loader img { border-radius: 18px; }
+#loader img { border-radius: 999px; }
 #load-sub { color: var(--muted); }
 .toast {
   position: fixed; bottom: calc(var(--player-h) + 8px); left: 50%; transform: translateX(-50%);
