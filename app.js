@@ -522,24 +522,24 @@
       hls.on(Hls.Events.MANIFEST_PARSED, onReady);
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (gen !== state.playGen || !data || !data.fatal) return;
-        failSkip();
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          try { hls.recoverMediaError(); return; } catch (_) {}
+        }
+        stayFailed();
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = url;
       video.addEventListener("loadedmetadata", onReady, { once: true });
     } else {
-      failSkip();
+      stayFailed();
     }
   }
-  function failSkip() {
+  function stayFailed() {
     if (state.tearing) return;
-    if (state.current) bury(state.current);
-    state.fails += 1;
     state.playing = false;
-    setStatus(state.fails < 8 ? t("hunting") : t("failed"));
+    setStatus(t("failed"));
     renderDock();
-    if (state.fails < 8) setTimeout(() => playRel(1), 220);
-    else toast(t("failed"));
+    showChrome();
   }
   function playRel(dir) {
     const list = huntList();
