@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IRIS — Live television · Made by Mobin.A</title>
+    <meta name="author" content="Mobin.A / مبین.آ" />
+    <meta name="theme-color" content="#07070b" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="./assets/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon-180.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="IRIS" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=1" />
+  </head>
+  <body>
+    <div class="glow"></div>
+
+    <header class="top">
+      <button class="brand" id="about-btn" type="button">
+        <img src="./assets/icon-192.png" width="40" height="40" alt="IRIS" />
+        <div>
+          <div class="word" dir="ltr">IRIS</div>
+          <div class="tag" data-i18n="tag">Live television of the world</div>
+        </div>
+      </button>
+      <form id="search-form" class="search">
+        <input id="q" type="search" autocomplete="off" data-i18n-placeholder="search" placeholder="Search channel, country, news…" />
+      </form>
+      <button type="button" class="icon-btn" data-act="filters" id="filters-btn" data-i18n-aria="filters">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6.2h16v2H4v-2zm3 4.8h10v2H7v-2zm3 4.8h4v2h-4v-2z"/></svg>
+      </button>
+      <button type="button" class="icon-btn" data-act="settings" id="settings-btn" data-i18n-aria="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.49.49 0 0 0 13.9 2h-3.8a.49.49 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.72 8.48a.49.49 0 0 0 .12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94L2.82 14.13a.49.49 0 0 0-.12.61l1.92 3.32c.14.24.43.34.69.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.42.49.42h3.8c.24 0 .44-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.26.12.55.02.69-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+      </button>
+    </header>
+    <div class="slim"><div class="count-line" id="count-line"></div></div>
+
+    <main class="wall" id="wall"></main>
+
+    <footer class="dock" id="dock">
+      <button type="button" class="dock-art" data-act="expand">
+        <img id="d-logo" alt="" hidden />
+        <span id="d-ph" class="ph">IR</span>
+        <span class="live-dot"></span>
+      </button>
+      <button type="button" class="dock-meta" data-act="expand">
+        <div class="kicker"><span class="led"></span><span id="d-kick" data-i18n="live">LIVE</span></div>
+        <div id="d-name">IRIS</div>
+        <div id="d-sub" class="sub"></div>
+      </button>
+      <div class="dock-ctrls">
+        <button type="button" class="ghost" data-act="prev" data-i18n-aria="prev">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h2.2v12H6V6zm3.2 6 8.8 6.2V5.8L9.2 12z"/></svg>
+        </button>
+        <button type="button" class="play" data-act="toggle" id="d-toggle" data-i18n-aria="play">
+          <svg class="ic-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.2v13.6L19.4 12 8 5.2z"/></svg>
+          <svg class="ic-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h3.4v14H7V5zm6.6 0H17v14h-3.4V5z"/></svg>
+        </button>
+        <button type="button" class="ghost" data-act="next" data-i18n-aria="next">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.8 6H18v12h-2.2V6zM6 18.2 14.8 12 6 5.8v12.4z"/></svg>
+        </button>
+        <button type="button" class="ghost fav-btn" data-act="fav" id="d-fav" data-i18n-aria="fav">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 20.2 10.4 18.8C5.4 14.3 2 11.3 2 7.6 2 4.6 4.4 2.2 7.4 2.2c1.7 0 3.3.8 4.6 2.1 1.3-1.3 2.9-2.1 4.6-2.1 3 0 5.4 2.4 5.4 5.4 0 3.7-3.4 6.7-8.4 11.2L12 20.2z"/></svg>
+        </button>
+      </div>
+    </footer>
+
+    <div id="stage" class="stage" hidden>
+      <div class="screen">
+        <video id="vid" playsinline></video>
+        <div class="scan"></div>
+        <div class="stage-ui">
+          <div class="stage-top">
+            <button type="button" class="ghost" data-act="collapse" data-i18n-aria="collapse">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7.4 9.4 12 14l4.6-4.6L18 10.8l-6 6-6-6 1.4-1.4z"/></svg>
+            </button>
+            <div class="stage-brand">
+              <div class="word" dir="ltr">IRIS</div>
+              <div class="kicker"><span class="led"></span><span data-i18n="live">LIVE</span></div>
+            </div>
+            <button type="button" class="ghost fav-btn" data-act="fav" id="s-fav">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 20.2 10.4 18.8C5.4 14.3 2 11.3 2 7.6 2 4.6 4.4 2.2 7.4 2.2c1.7 0 3.3.8 4.6 2.1 1.3-1.3 2.9-2.1 4.6-2.1 3 0 5.4 2.4 5.4 5.4 0 3.7-3.4 6.7-8.4 11.2L12 20.2z"/></svg>
+            </button>
+          </div>
+          <div class="stage-bot">
+            <div>
+              <h2 id="s-name">—</h2>
+              <p id="s-sub" class="sub"></p>
+            </div>
+            <div class="stage-ctrls">
+              <button type="button" class="ghost" data-act="prev">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h2.2v12H6V6zm3.2 6 8.8 6.2V5.8L9.2 12z"/></svg>
+              </button>
+              <button type="button" class="play xl" data-act="toggle" id="s-toggle">
+                <svg class="ic-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.2v13.6L19.4 12 8 5.2z"/></svg>
+                <svg class="ic-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M7 5h3.4v14H7V5zm6.6 0H17v14h-3.4V5z"/></svg>
+              </button>
+              <button type="button" class="ghost" data-act="next">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.8 6H18v12h-2.2V6zM6 18.2 14.8 12 6 5.8v12.4z"/></svg>
+              </button>
+              <button type="button" class="ghost" data-act="fs" data-i18n-aria="fs">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="filters" class="drawer" hidden>
+      <div class="drawer-card">
+        <div class="drawer-handle"></div>
+        <div class="drawer-head">
+          <h3 data-i18n="browse">Browse channels</h3>
+          <button type="button" class="ghost wide" data-act="filters" data-i18n="close">Close</button>
+        </div>
+        <div class="drawer-quick">
+          <button type="button" class="ghost wide" data-mode="fav" id="fav-btn" data-i18n="fav">Favorites</button>
+          <button type="button" class="ghost wide" data-mode="recent" id="rec-btn" data-i18n="recent">Recent</button>
+          <button type="button" class="ghost wide" data-act="clearf" id="clear-btn" hidden data-i18n="clear">Clear</button>
+        </div>
+        <div class="filter-lab" data-i18n="places">Countries</div>
+        <div class="chips" id="countries"></div>
+        <div class="filter-lab" data-i18n="cats">Categories</div>
+        <div class="chips" id="cats"></div>
+      </div>
+    </div>
+
+    <div id="settings" class="drawer" hidden>
+      <div class="drawer-card">
+        <div class="drawer-handle"></div>
+        <div class="drawer-head">
+          <h3 data-i18n="settings">Settings</h3>
+          <button type="button" class="ghost wide" data-act="settings" data-i18n="close">Close</button>
+        </div>
+        <div class="set-row">
+          <span data-i18n="language">Language</span>
+          <div class="lang-switch">
+            <button type="button" data-lang="en" class="on">EN</button>
+            <button type="button" data-lang="fa">فا</button>
+          </div>
+        </div>
+        <div class="set-row">
+          <span data-i18n="theme">Theme</span>
+          <div class="chips tight" id="themes"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="credit">
+      <span data-i18n="credit">Made by</span> <b>مبین.آ</b>
+      · <span data-i18n="source">iptv-org</span>
+    </div>
+
+    <div id="about" class="about" hidden>
+      <div class="about-card">
+        <img src="./assets/icon-192.png" width="88" height="88" alt="IRIS" />
+        <div class="word" dir="ltr">IRIS</div>
+        <h3 data-i18n="aboutTitle">About the maker</h3>
+        <p class="about-body" data-i18n="aboutBody"></p>
+        <p class="about-maker" data-i18n="aboutMaker">Made by Mobin.A</p>
+        <a class="tg" href="https://t.me/MobinA_programs" target="_blank" rel="noopener">
+          <span data-i18n="channel">My programs channel</span>
+          <span dir="ltr">t.me/MobinA_programs</span>
+        </a>
+        <button id="about-close" type="button" data-i18n="close">Close</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <div id="loader">
+      <img src="./assets/icon-192.png" width="92" height="92" alt="" />
+      <div class="word" dir="ltr">IRIS</div>
+      <div id="load-sub" data-i18n="loading">Tuning the world…</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js"></script>
+    <script src="./i18n.js?v=1"></script>
+    <script src="./app.js?v=1"></script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "IRIS — Live television",
+  "short_name": "IRIS",
+  "description": "Live television of the world. Made by Mobin.A",
+  "start_url": "./index.html",
+  "id": "./",
+  "display": "standalone",
+  "background_color": "#07070b",
+  "theme_color": "#07070b",
+  "lang": "en",
+  "icons": [
+    { "src": "./assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./assets/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
