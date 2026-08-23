@@ -9,9 +9,9 @@
     "https://iptv-org.github.io/iptv/countries/ir.m3u",
   ];
   const FEATURED = [
-    { id: "feat-bbc-fa", name: "بی‌بی‌سی فارسی", cc: "GB", groups: ["news"], desk: "persian", yt: "I0PU3dgFnGQ", ytChan: "UCHZk9MrT3DGWmVqdsj5y0EA", logo: "https://i.ytimg.com/vi/I0PU3dgFnGQ/mqdefault.jpg" },
-    { id: "feat-iranintl", name: "ایران اینترنشنال", cc: "GB", groups: ["news"], desk: "persian", yt: "5JDxjsAVaGk", ytChan: "UCat6bC0Wrqq9Bcq7EkH_yQw", logo: "https://i.ytimg.com/vi/5JDxjsAVaGk/mqdefault.jpg" },
-    { id: "feat-voa-fa", name: "صدای آمریکا", cc: "US", groups: ["news"], desk: "persian", yt: "UzRuHWrN-gE", ytChan: "UCttfDeGMwUxPjnlsKagcwKw", logo: "https://i.ytimg.com/vi/UzRuHWrN-gE/mqdefault.jpg" },
+    { id: "feat-bbc-fa", name: "بی‌بی‌سی فارسی", cc: "IR", groups: ["news"], yt: "I0PU3dgFnGQ", ytChan: "UCHZk9MrT3DGWmVqdsj5y0EA", logo: "https://i.ytimg.com/vi/I0PU3dgFnGQ/mqdefault.jpg" },
+    { id: "feat-iranintl", name: "ایران اینترنشنال", cc: "IR", groups: ["news"], yt: "5JDxjsAVaGk", ytChan: "UCat6bC0Wrqq9Bcq7EkH_yQw", logo: "https://i.ytimg.com/vi/5JDxjsAVaGk/mqdefault.jpg" },
+    { id: "feat-voa-fa", name: "صدای آمریکا", cc: "IR", groups: ["news"], yt: "UzRuHWrN-gE", ytChan: "UCttfDeGMwUxPjnlsKagcwKw", logo: "https://i.ytimg.com/vi/UzRuHWrN-gE/mqdefault.jpg" },
     { id: "feat-dw-en", name: "DW English", cc: "DE", groups: ["news"], url: "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8" },
     { id: "feat-dw-de", name: "DW Deutsch", cc: "DE", groups: ["news"], url: "https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8" },
     { id: "feat-dw-ar", name: "DW العربية", cc: "DE", groups: ["news"], url: "https://dwamdstream103.akamaized.net/hls/live/2015526/dwstream103/master.m3u8" },
@@ -216,8 +216,6 @@
     renderCats();
     renderThemes();
     renderNow();
-    renderDesk();
-    renderQuick();
     renderSleeps();
     renderResume();
     renderWall(true);
@@ -325,8 +323,6 @@
     state.shown = 0;
     state.painted = 0;
     renderNow();
-    renderDesk();
-    renderQuick();
     renderWall(true);
     const w = $("wall");
     if (w) w.scrollTop = 0;
@@ -371,33 +367,9 @@
   function renderNow() {
     const box = $("now");
     if (!box) return;
-    box.innerHTML = FEATURED.filter((c) => !isPersian(c)).map((c) => {
+    box.innerHTML = FEATURED.map((c) => {
       const on = state.current && state.current.id === c.id ? "on" : "";
       return `<button type="button" class="chip ${on}" data-play="${esc(c.id)}">${flag(c.cc)} ${esc(c.name)}</button>`;
-    }).join("");
-  }
-  function renderDesk() {
-    const box = $("desk");
-    if (!box) return;
-    box.innerHTML = FEATURED.filter(isPersian).map((c) => {
-      const on = state.current && state.current.id === c.id ? "on" : "";
-      return `<button type="button" class="chip ${on}" data-play="${esc(c.id)}">${flag(c.cc)} ${esc(c.name)}</button>`;
-    }).join("");
-  }
-  function renderQuick() {
-    const box = $("quick");
-    if (!box) return;
-    const items = [
-      { id: "world", on: state.mode === "browse" && !state.cc && !state.cat, act: "world" },
-      { id: "persian", on: state.mode === "persian", act: "persian" },
-      { id: "news", on: state.cat === "news", act: "cat", val: "news" },
-      { id: "sports", on: state.cat === "sports", act: "cat", val: "sports" },
-      { id: "kids", on: state.cat === "kids", act: "cat", val: "kids" },
-      { id: "germany", on: state.cc === "DE", act: "cc", val: "DE" },
-      { id: "music", on: state.cat === "music", act: "cat", val: "music" },
-    ];
-    box.innerHTML = items.map((it) => {
-      return `<button type="button" class="${it.on ? "on" : ""}" data-quick="${it.act}" data-val="${it.val || ""}">${t(it.id)}</button>`;
     }).join("");
   }
   function renderSleeps() {
@@ -427,7 +399,7 @@
     </button>`;
   }
   function useHome() {
-    return state.mode === "browse" && !state.cc && !state.cat && !state.q.trim();
+    return false;
   }
   function pickRail(fn, n) {
     const seen = new Set();
@@ -1117,7 +1089,12 @@
     renderCats();
     applyFilter();
   }
+  function hideExploreTip() {
+    document.querySelectorAll(".neon-tip").forEach((el) => { el.hidden = true; });
+    try { localStorage.setItem("iris-seen-filter", "1"); } catch (_) {}
+  }
   function toggleFilters() {
+    hideExploreTip();
     const el = $("filters");
     if (!el) return;
     if (el.hidden) {
@@ -1463,12 +1440,12 @@
       const cached = loadLiveCache();
       if (cached.length) state.all = FEATURED.concat(cached);
       applyFilter();
+      if (localStorage.getItem("iris-seen-filter") === "1") hideExploreTip();
       if (state.resume) {
         const last = findCh(localStorage.getItem("iris-last"));
         if (last) {
           state.current = last;
           renderDock();
-          renderDesk();
           renderNow();
         }
       }
