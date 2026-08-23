@@ -1090,7 +1090,9 @@
     applyFilter();
   }
   function hideExploreTip() {
-    document.querySelectorAll(".neon-tip").forEach((el) => { el.hidden = true; });
+    document.querySelectorAll(".neon-point").forEach((el) => { el.hidden = true; });
+    const hit = $("filter-hit");
+    if (hit) hit.classList.add("seen");
     try { localStorage.setItem("iris-seen-filter", "1"); } catch (_) {}
   }
   function toggleFilters() {
