@@ -24,7 +24,7 @@ window.I18N = {
     aboutTitle: "About the maker",
     aboutBody:
       "Mobin.A is a programmer. IRIS is live television from around the world — news, sports, music, cinema. Other apps on Telegram.",
-    explore: "Explore every channel by filtering them!",
+    explore: "For a better browse of every channel, tap this text — or tap the filter button at the top.",
     aboutMaker: "Made by Mobin.A",
     channel: "My programs channel",
     loading: "Tuning the world…",
@@ -96,7 +96,7 @@ window.I18N = {
     aboutTitle: "درباره سازنده",
     aboutBody:
       "مبین.آ برنامه‌نویس است. IRIS تلویزیون زندهٔ جهان است؛ خبر، ورزش، موسیقی، سینما. بقیهٔ برنامه‌ها در تلگرام.",
-    explore: "تمام کانال‌ها را با فیلتر کردن آن‌ها کاوش کنید!",
+    explore: "برای کاوش بهتر تمام کانال‌ها، روی همین متن کلیک کنید یا دکمه‌ی فیلتر بالای برنامه را بزنید.",
     aboutMaker: "ساخته شده توسط مبین.آ",
     channel: "کانال برنامه‌های من",
     loading: "در حال کوک دنیا…",
