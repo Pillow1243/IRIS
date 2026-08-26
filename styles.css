@@ -13,6 +13,7 @@
   --player-h: 110px;
   --sans: "Vazirmatn", system-ui, sans-serif;
   --disp: "Syne", "Vazirmatn", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
@@ -79,9 +80,13 @@ svg { display: block; width: 20px; height: 20px; }
   pointer-events: none; user-select: none;
 }
 .live-pill b {
-  font-family: var(--disp); color: var(--acc);
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--acc);
   font-variant-numeric: tabular-nums;
-  min-width: 6.4em; text-align: center;
+  min-width: 6.4em;
+  text-align: center;
 }
 .live-pill b.pop { animation: crowd-pop .35s ease; }
 .live-pill .pill-dot {
