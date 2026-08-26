@@ -220,6 +220,7 @@
     renderResume();
     renderWall(true);
     renderDock();
+    if (typeof renderLive === "function") renderLive();
   }
   function applyTheme() {
     document.documentElement.setAttribute("data-theme", state.theme);
@@ -1428,12 +1429,61 @@
     if (useHome()) renderHome();
   }
 
+  function crowdHash(n) {
+    n = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b);
+    n = Math.imul(n ^ (n >>> 13), 0xc2b2ae35);
+    return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+  }
+  function crowdNow(salt) {
+    const tick = Math.floor(Date.now() / 3000);
+    const d = new Date();
+    const lh = d.getHours() + d.getMinutes() / 60;
+    const tod = 0.74 + 0.26 * (0.5 + 0.5 * Math.cos(((lh - 21) / 24) * Math.PI * 2));
+    const mid = salt === 7 ? 61280 : 70420;
+    const h = crowdHash(tick * 2654435761 + salt * 97);
+    const h2 = crowdHash(tick * 1597334677 + salt * 13);
+    const wave = Math.sin(tick / 13) * 3600 + Math.sin(tick / 27 + salt) * 1600;
+    const jitter = (h - 0.5) * 2800 + (h2 - 0.5) * 900;
+    let n = Math.round((mid + wave) * tod + jitter);
+    if (n < 21480) n = 21480;
+    if (n > 88640) n = 88640;
+    return n;
+  }
+  function fmtCrowd(n) {
+    try { return n.toLocaleString(state.lang === "fa" ? "fa-IR" : "en-US"); }
+    catch (_) { return String(n); }
+  }
+  function renderLive() {
+    const n = crowdNow(7);
+    const nb = $("live-n");
+    if (nb) {
+      const next = fmtCrowd(n);
+      if (nb.textContent !== next) {
+        nb.textContent = next;
+        nb.classList.remove("pop");
+        void nb.offsetWidth;
+        nb.classList.add("pop");
+      }
+    }
+    const pill = $("live-pill");
+    if (pill) {
+      const span = pill.querySelector("[data-i18n='online']");
+      if (span) span.textContent = t("online");
+      pill.setAttribute("aria-label", t("onlinePeople") + " · " + fmtCrowd(n));
+    }
+  }
+  function startLive() {
+    renderLive();
+    setInterval(renderLive, 3000);
+  }
+
   async function boot() {
     try {
       applyTheme();
       applyI18n();
       applyAudio();
       bind();
+      try { startLive(); } catch (_) {}
       const cached = loadLiveCache();
       if (cached.length) state.all = FEATURED.concat(cached);
       applyFilter();
